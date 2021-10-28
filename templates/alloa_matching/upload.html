@@ -1,6 +1,9 @@
 <html>
     <body>
         <h1>Upload Page</h1>
+        {% if uploaded %}
+            {{ uploaded }}
+        {% endif %}
         <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}

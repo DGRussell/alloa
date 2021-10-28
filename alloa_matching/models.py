@@ -32,7 +32,7 @@ class Manager(models.Model):
     instance = models.ForeignKey(Instance, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.admin + " managing " + self.instance
+        return str(self.admin) + " managing " + str(self.instance)
 
 class Academic(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -60,7 +60,7 @@ class Choice(models.Model):
     rank = models.IntegerField(default=1, blank=False)
 
     def __str__(self):
-        return self.student + " ranks " + self.project + " rank " + self.rank
+        return str(self.student) + " ranks " + str(self.project) + " their choice number " + str(self.rank)
 
 class AdvisorLevel(models.Model):
     academic = models.ForeignKey(Academic, on_delete=models.CASCADE)
@@ -68,7 +68,7 @@ class AdvisorLevel(models.Model):
     level = models.IntegerField(choices=((1, "Expert Knowledge"), (2, "High Knowledge"), (3, "Good Knowledge")), default=1, blank=False)
     
     def __str__(self):
-        return self.assignee + " can mentor " + self.project + " with " + self.level
+        return str(self.academic) + " can mentor " + str(self.project) + " at level " + str(self.level)
 
 class Result(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -76,5 +76,5 @@ class Result(models.Model):
     academic = models.ForeignKey(Academic, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.student + " assigned to " + self.project + " supervised by " + self.academic
+        return str(self.student) + " assigned to " + str(self.project) + " supervised by " + str(self.academic)
 

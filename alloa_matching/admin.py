@@ -2,11 +2,28 @@ from django.contrib import admin
 from alloa_matching.models import *
 # Register your models here.
 
-admin.site.register(Instance)
-admin.site.register(Student)
-admin.site.register(Admin)
-admin.site.register(Manager)
-admin.site.register(Academic)
-admin.site.register(Project)
-admin.site.register(Choice)
+class InstanceAdmin(admin.ModelAdmin):
+    list_display = ('name','level')
+class StudentAdmin(admin.ModelAdmin):
+    list_display = ('instance','user','matric_number','upper_cap','lower_cap')
+class AdminSquared(admin.ModelAdmin):
+    list_display = ('user','super_admin')
+class ManagerAdmin(admin.ModelAdmin):
+    list_display = ('instance','admin')
+class AcademicAdmin(admin.ModelAdmin):
+    list_display = ('instance','user','staff_id','upper_cap','lower_cap')
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ('instance','name','description','upper_cap','lower_cap')
+class ChoiceAdmin(admin.ModelAdmin):
+    list_display = ('student','project','rank')
+class ALevelAdmin(admin.ModelAdmin):
+    list_display = ('academic','project','level')
+
+admin.site.register(Instance, InstanceAdmin)
+admin.site.register(Student, StudentAdmin)
+admin.site.register(Admin, AdminSquared)
+admin.site.register(Manager, ManagerAdmin)
+admin.site.register(Academic, AcademicAdmin)
+admin.site.register(Project, ProjectAdmin)
+admin.site.register(Choice, ChoiceAdmin)
 admin.site.register(AdvisorLevel)
