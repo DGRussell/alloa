@@ -23,7 +23,7 @@ def upload(request):
             academics = file_read(request.FILES["academics"])
 
             # Create a new instance for uploaded files - need to add to form to name the instance and give the instance level
-            instance = Instance.objects.get_or_create(name="Bulk Upload",level=1)[0]
+            instance = Instance.objects.get_or_create(name=form.cleaned_data.get("name"),level=form.cleaned_data.get("level"))[0]
             instance.save()
 
             # For each academic make them a user and an academic profile

@@ -55,3 +55,6 @@
 
 ### 28 Oct 2021
 * *3 hours* Saved dictionaries into database 
+
+### 29 Oct 2021
+* *1 hour* Created a clean database function and added forms to add the name and level of the instance
