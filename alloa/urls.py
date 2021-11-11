@@ -26,4 +26,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
     path('upload/', views.upload, name='upload'),
+    path('compute_matching/', views.compute_matching, name='compute_matching')
 ]

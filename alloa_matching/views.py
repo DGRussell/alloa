@@ -6,6 +6,7 @@ from django.template.loader import render_to_string, get_template
 from django.conf import settings
 from alloa_matching.models import *
 from alloa_matching.forms import *
+from typing import List, Optional
 
 # Create your views here.
 def index(request):
@@ -76,6 +77,48 @@ def upload(request):
     context_dict['form'] = form
     return render(request, 'alloa_matching/upload.html',context=context_dict)
 
+def compute_matching(request):
+    context_dict = {}
+    data_objects = []
+    quoting = 3
+
+    # Project retrieval
+    level = 2
+    projects = Project.objects.filter(instance=4)
+    file_data = File(randomise=False,level=level,quoting=quoting)
+    for project in projects:
+        advisor_levels = AdvisorLevel.objects.filter(project=project)
+        line = [project.name,str(project.lower_cap),str(project.upper_cap)]
+        for level in advisor_levels:
+            line.append(level.academic.user.first_name)
+        file_data.file_content.append(Line(line))
+    data_objects.append(file_data)
+
+    # Academic retrieval
+    level = 3
+    academics = Academic.objects.filter(instance=4)
+    file_data = File(randomise=False,level=level,quoting=quoting)
+    for academic in academics:
+        line = [academic.user.first_name,str(academic.lower_cap),str(academic.upper_cap)]
+        file_data.file_content.append(Line(line))
+    data_objects.append(file_data)
+
+    # Student retrieval
+    level = 1
+    students = Student.objects.filter(instance=4)
+    file_data = File(randomise=False,level=level,quoting=quoting)
+    for student in students:
+        line = [student.user.get_full_name(),str(student.lower_cap),str(student.upper_cap)]
+        choices = Choice.objects.filter(student=student)
+        for choice in choices:
+            line.append(choice.project.name)
+        file_data.file_content.append(Line(line))
+    data_objects.append(file_data)
+
+    print(data_objects)
+    context_dict["data_objects"] = data_objects
+    return render(request, 'alloa_matching/upload.html',context=context_dict)
+
 def file_read(csv_file):
     # Decode given file - split up lines and pop headings line
     data = csv_file.read().decode("utf-8")
@@ -92,3 +135,36 @@ def file_read(csv_file):
                 individual[headings[i].replace("\r","")] = data[i].replace("\r","")
             group.append(individual) 
     return group
+
+class Line:
+    """Represents a line of data read from input CSV file."""
+    def __init__(self, line: List[str]) -> None:
+        self.line = [x.strip() for x in line]
+        self.raw_name = line[0]
+        self.capacities = [int(x) for x in self.line[1:3]]
+        self.raw_preferences = self.line[3:]
+
+    def __eq__(self, other) -> bool:
+        return self.line == other.line
+
+    def __repr__(self) -> str:
+        return "line" + str(self.raw_name)
+
+class File:
+    """Contains data parsed from input CSV file."""
+    def __init__(
+        self,
+        delimiter: str = ',',
+        level: Optional[int] = None,
+        randomise: bool = False,
+        quoting: int = 3,
+    ) -> None:
+        self.randomise = randomise
+        self.delimiter = delimiter
+        self.quoting = quoting
+        self.level = level
+
+        self.file_content = []
+        
+        def __repr__(self):
+            return 'LEVEL_' + str(self.level) + '_DATA'

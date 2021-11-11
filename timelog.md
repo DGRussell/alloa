@@ -58,3 +58,24 @@
 
 ### 29 Oct 2021
 * *1 hour* Created a clean database function and added forms to add the name and level of the instance
+* *1 hour* Meeting with advisor discussing next steps - setup data structures and run alloa
+
+## Week 6
+
+### 4 Nov 2021
+* *4 hours* Investigating original Alloa code to find data structures that I will need to pass in from the database
+* Had to cancel advisor meeting as had not had a chance to do much work this week until after meeting had passed
+
+## Week 7
+
+### 8 Nov 2021
+* *1 hour* Created structures.md to record all findings and objects I need to create to use the graph_builder function from alloa
+
+### 9 Nov 2021
+* *3 hours* Querying database to get necessary data and storing in dictionary representation
+
+### 10 Nov 2021
+* *3 hours* Creating objects and converting dictionaries to instances of these objects
+
+### 11 Nov 2021
+* *1 hour* Advisor meeting - discussing structure I found and created classes
