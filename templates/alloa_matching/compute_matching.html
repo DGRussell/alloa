@@ -1,0 +1,11 @@
+<html>
+    <body>
+        <h1>Matching for {{ instance.name }}</h1>
+        {% for result in results %}
+            <p>{{result.student.user_profile.user.first_name}} assigned to {{result.project}} supervised by {{result.academic}}</p>
+        {% endfor %}
+        {% for result in unmatched %}
+            <p>{{result.user_profile.user.first_name}} is unmatched</p>
+        {% endfor %}
+    </body>
+</html>

@@ -79,3 +79,77 @@
 
 ### 11 Nov 2021
 * *1 hour* Advisor meeting - discussing structure I found and created classes
+
+## Week 8
+
+### 17 Nov 2021
+* *2 hours* Going through alloa graph building stages trying to understand the structures that are created and how they are outputted 
+
+* Had very little time to work this week as several courseworks were due
+
+## Week 9
+
+### 21 Nov 2021
+
+* *2 hours* Started to implement the graph builder functions to try and create an allocation graph
+* *1 hour* Decided to change approach and copy the .py files from orignial alloa and import all the classes instead of recreating them
+
+### 23 Nov 2021
+
+* *3 hours* Implementing the classes and functions now they are being imported, recreating what happens in run.py in my view function
+
+### 24 Nov 2021
+
+* *2 hours* Taking output from alloa implementation and saving results to the database, need to separate instances that have been computed
+
+### 25 Nov 2021
+
+* *1 hour* Created list view for all instances and instance results
+* *1 hour* Added booleans for instances for if they are available to students, closed for making choices and if their matching has been computed or stored. Used these to check if matching needs to be computed or can be loaded from database.
+* *30 mins* Created list of final project allocations for an instance
+
+### 26 Nov 2021
+
+* *1 hour* Advisor meeting, working out next steps after must haves completed
+
+## Week 10
+
+### 30 Nov 2021
+
+* *2 hours* Created planning diagram for should have steps
+* *1 hour* Planning status splits for instances
+
+### 2 Dec 2021
+
+* *2 hours* Planning out versions of pages depending on instance status and user type
+
+### 3 Dec 2021
+
+* *1 hour* Advisor meeting, making slight changes to plan and stages
+
+## Week 11
+
+### 8 Dec 2021
+
+* *3 hours* Starting wireframing
+
+### 9 Dec 2021
+
+* *1 hour* Advisor meeting, showing wireframes, discussing potential changes
+
+## Week 12 
+
+### 13 Dec 2021
+
+* *2 hours* Allocation viewing pages wireframing
+* *1 hour* Added stage enum variable for instances
+
+### 14 Dec 2021
+
+* *1 hour* Starting to implement home page, needed to generate more instances for testing
+* *3 hours* Editing instance generator to generate relevant data for database
+
+### 16 Dec 2021
+
+* *1 hour* Advisor meeting - discussed planned progress over christmas break
+* *3 hours* Writing end of semester status report

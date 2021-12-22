@@ -12,6 +12,7 @@ def clean():
     Instance.objects.all().delete()
     Student.objects.all().delete()
     User.objects.all().delete()
+    UserProfile.objects.all().delete()
     Admin.objects.all().delete()
     Result.objects.all().delete()
     Choice.objects.all().delete()

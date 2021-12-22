@@ -25,6 +25,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
+    path('home/', views.home, name='home'),
     path('upload/', views.upload, name='upload'),
-    path('compute_matching/', views.compute_matching, name='compute_matching')
+    path('compute_matching/<int:instance_id>/', views.compute_matching, name='compute_matching')
 ]

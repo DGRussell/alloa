@@ -1,0 +1,8 @@
+<html>
+    <body>
+        <h1>Instances</h1>
+        {% for instance in instances %}
+            <p>{{ instance.name }} - <a href = {% url 'compute_matching' instance.id %}>Compute Matching</a>
+        {% endfor %}
+    </body>
+</html>

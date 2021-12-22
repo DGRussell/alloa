@@ -6,26 +6,42 @@ from django.contrib.auth.models import User
 class Instance(models.Model):
     name = models.CharField(max_length=200, unique=True, blank=False)
     level = models.IntegerField(default=0, blank=False)
+    stage_choices = (
+        ('N','New'),
+        ('P','Project Proposal'),
+        ('L','Lecturer Ranking Levels'),
+        ('S','Student Preference Collection'),
+        ('C','Closed'),
+        ('R','Results Available')
+    )
+    stage = models.CharField(max_length=1,choices=stage_choices,default='N')
 
     def __str__(self):
         return self.name
 
-class Student(models.Model):
+class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    matric_number = models.CharField(max_length=8, unique=True, blank=False)
+    user_type = models.CharField(max_length=2,choices=(("ST","Student"),("AC","Academic"),("AD","Admin")), default="ST")
+    unique_id = models.CharField(max_length=8, unique=True, blank=False)
+
+    def __str__(self):
+        return self.user.get_full_name()
+
+class Student(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     instance = models.ForeignKey(Instance, on_delete=models.CASCADE)
     upper_cap = models.IntegerField(default=1, blank=False)
     lower_cap = models.IntegerField(default=0, blank=False)
 
     def __str__(self):
-        return self.matric_number
+        return self.user_profile.user.get_full_name()
 
 class Admin(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     super_admin = models.BooleanField(blank=False, default=False)
 
     def __str__(self):
-        return self.user.get_full_name()
+        return self.user_profile.user.get_full_name()
 
 class Manager(models.Model):
     admin = models.ForeignKey(Admin, on_delete=models.CASCADE)
@@ -35,14 +51,13 @@ class Manager(models.Model):
         return str(self.admin) + " managing " + str(self.instance)
 
 class Academic(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    staff_id = models.CharField(max_length=6, unique=True, blank=False)
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     instance = models.ForeignKey(Instance, on_delete=models.CASCADE)
     upper_cap = models.IntegerField(default=1, blank=False)
     lower_cap = models.IntegerField(default=0, blank=False)
 
     def __str__(self):
-        return self.user.get_full_name()
+        return self.user_profile.user.get_full_name()
 
 class Project(models.Model):
     name = models.CharField(max_length=200, blank=False)
