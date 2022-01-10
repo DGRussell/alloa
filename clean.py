@@ -25,12 +25,12 @@ def clean():
 def create_super_user():
 
     user = User(
-        username = "douglas",
+        username = "DR2000@gmail.com",
         email = "douglas@super.user",
         first_name = "douglas",
         last_name = "russell",
     )
-    user.set_password("pass")
+    user.set_password("TestPass1")
     user.is_superuser = True
     user.is_staff = True
     user.save()

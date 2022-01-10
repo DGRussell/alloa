@@ -1,0 +1,6 @@
+{% extends 'alloa_matching/base.html' %}
+{% load staticfiles %}
+
+{% block body_block %}
+        <a href = "{% url 'compute_matching' instance.id %}">Compute Matching</a>
+{% endblock %}

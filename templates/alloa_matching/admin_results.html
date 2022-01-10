@@ -1,0 +1,14 @@
+{% extends 'alloa_matching/base.html' %}
+{% load staticfiles %}
+
+{% block body_block %}
+        <h1>Matching for {{ instance.name }}</h1>
+        {% for student_result in results %}
+            {% for result in student_result %}
+                <p>{{result.student.user_profile.user.first_name}} assigned to {{result.project}} supervised by {{result.academic}}</p>
+            {% endfor %}
+        {% endfor %}
+        {% for result in unmatched %}
+            <p>{{result.user_profile.user.first_name}} is unmatched</p>
+        {% endfor %}
+{% endblock %}

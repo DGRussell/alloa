@@ -153,3 +153,19 @@
 
 * *1 hour* Advisor meeting - discussed planned progress over christmas break
 * *3 hours* Writing end of semester status report
+
+## Week 15
+
+### 4 Jan 2022
+
+* *2 hours* Login view made and session variables for user type setup
+* *3 hours* Base template created
+* *2 hours* logout made and session variables deleted after use
+
+## Week 16
+
+### 10 Jan 2022
+
+* *3 hours* Compute matching view moved and converted to a redirect
+* *2 hours* View instance view separated into different stages and user types
+* *30 mins* Looking for javascript table search and sort plugin, settled on datatables

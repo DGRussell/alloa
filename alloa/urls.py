@@ -26,6 +26,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
     path('home/', views.home, name='home'),
-    path('upload/', views.upload, name='upload'),
-    path('compute_matching/<int:instance_id>/', views.compute_matching, name='compute_matching')
+    path('logout/', views.user_logout, name='logout'),
+    path('instance/new/', views.upload, name='upload'),
+    path('instance/<int:instance_id>/', views.instance, name='instance'),
+    path('instance/<int:instance_id>/match/', views.compute_matching, name='compute_matching')
 ]

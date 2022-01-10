@@ -1,8 +1,11 @@
-<html>
-    <body>
-        <h1>Instances</h1>
-        {% for instance in instances %}
-            <p>{{ instance.name }} - <a href = {% url 'compute_matching' instance.id %}>Compute Matching</a>
-        {% endfor %}
-    </body>
-</html>
+{% extends 'alloa_matching/base.html' %}
+{% load staticfiles %}
+
+{% block body_block %}
+    <h1>Instances</h1>
+    {% for instance in instances %}
+        <p><a href = {% url 'instance' instance.id %}>{{ instance.name }}</a></p>
+    {% endfor %}
+    {{ user }}
+    {{ user_type }}
+{% endblock %}

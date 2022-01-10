@@ -1,13 +1,14 @@
-<html>
-    <body>
-        <h1>Upload Page</h1>
-        {% if uploaded %}
-            {{ uploaded }}
-        {% endif %}
-        <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <input type="submit" value="Submit">
-        </form>
-    </body>
-</html>
+{% extends 'alloa_matching/base.html' %}
+{% load staticfiles %}
+
+{% block body_block %}
+    <h1>Upload Page</h1>
+    {% if uploaded %}
+        {{ uploaded }}
+    {% endif %}
+    <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}

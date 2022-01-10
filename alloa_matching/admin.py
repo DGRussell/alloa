@@ -4,6 +4,8 @@ from alloa_matching.models import *
 
 class InstanceAdmin(admin.ModelAdmin):
     list_display = ('name','level','stage')
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ('user','user_type','unique_id',)
 class StudentAdmin(admin.ModelAdmin):
     list_display = ('instance','user_profile','upper_cap','lower_cap')
 class AdminSquared(admin.ModelAdmin):
@@ -22,6 +24,7 @@ class ResultAdmin(admin.ModelAdmin):
     list_display = ('student','academic','project')
 
 admin.site.register(Instance, InstanceAdmin)
+admin.site.register(UserProfile, ProfileAdmin)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Admin, AdminSquared)
 admin.site.register(Manager, ManagerAdmin)

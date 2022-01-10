@@ -1,0 +1,13 @@
+{% extends 'alloa_matching/base.html' %}
+{% load staticfiles %}
+
+{% block body_block %}
+        <h1>Matching for {{ instance.name }}</h1>
+        {% if unmatched %}
+            <p>An acceptable match could not be found in your project rankings. Please contact your course convenor</p>
+        {% else %}
+            {% for result in results %}
+                <p>You are assigned to {{result.project}} supervised by {{result.academic}}</p>
+            {% endfor %}
+        {% endif %}
+{% endblock %}
