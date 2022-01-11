@@ -2,12 +2,57 @@
 {% load staticfiles %}
 
 {% block body_block %}
-        <h1>Matching for {{ instance.name }}</h1>
-        {% if unmatched %}
-            <p>An acceptable match could not be found in your project rankings. Please contact your course convenor</p>
+    <div style = "margin-top:20px;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Results Available</h3></div>
+    {% if unmatched %}
+        <p>An acceptable match could not be found in your project rankings. Please contact your course convenor</p>
+    {% else %}
+        {% if results|length > 1 %}
+            <h3>Assigned Projects</h3>
         {% else %}
-            {% for result in results %}
-                <p>You are assigned to {{result.project}} supervised by {{result.academic}}</p>
-            {% endfor %}
+            <h3>Assigned Project</h3>
         {% endif %}
+        {% for result in results %}
+            <table class = "result">
+                <tr>
+                    <th>{{result.project}}</th>
+                </tr>
+                <tr>
+                    <td><p><b>Supervisor: {{result.academic}} - Email: {{result.academic.user_profile.user.email}}</b></p>{{result.project.description}}</td>
+                </tr>
+            </table>
+        {% endfor %}
+    {% endif %}
 {% endblock %}
+
+{% block style_block %}
+    h1,h3{
+        font-family: arial;
+    }
+    h1,.stage{
+        display:inline;
+    }
+    .stage{
+        background-color: green;
+        color: white;
+        padding: 5px;
+        border-radius:5px;
+        vertical-align:4px;
+    }
+    .result{
+        width:100%;
+        border-collapse:collapse;
+        border-radius:5px;
+        border: 1px solid grey;
+        margin: 0 0 10px 0;
+    }
+    .result th{
+        text-align:left;
+        background-color:grey;
+        color:white;
+    }
+    .result th,td{
+        padding: 10px;
+        font-family:arial;
+        font-size: 16px;
+    }
+{% endblock%}

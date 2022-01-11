@@ -169,3 +169,9 @@
 * *3 hours* Compute matching view moved and converted to a redirect
 * *2 hours* View instance view separated into different stages and user types
 * *30 mins* Looking for javascript table search and sort plugin, settled on datatables
+
+### 11 Jan 2022
+
+* *2 hours* Implementing data tables for admin view
+* *1 hour* Designing student results view
+* *2 hours* Designing academic results view

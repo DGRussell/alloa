@@ -13,8 +13,10 @@
             <h1>Alloa Student-Project Matching Algorithm</h1>
             <a href="{% url 'logout'%}">Logout</a>
         </div>
-        {% block body_block %}
-        {% endblock %}
+        <div class = "container">
+            {% block body_block %}
+            {% endblock %}
+        </div>
     </body>
     {% block script_block %}
     {% endblock %}
@@ -44,6 +46,9 @@
             color:white;
             font-family:arial;
             font-size:16px
+        }
+        .container{
+            padding: 0 1%;
         }
         {% block style_block %}
         {% endblock %}

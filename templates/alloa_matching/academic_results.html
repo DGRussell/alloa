@@ -1,13 +1,105 @@
 {% extends 'alloa_matching/base.html' %}
 {% load staticfiles %}
 
+{% block head_block %}
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script src="https://kit.fontawesome.com/2e8b22a65b.js" crossorigin="anonymous"></script>
+{% endblock %}
+
 {% block body_block %}
-        <h1>Matching for {{ instance.name }}</h1>
-        {% if unmatched %}
-            <p>No students were matched to you.</p>
+    <div style = "margin:20px 0;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Results Available</h3></div>
+    {% if unmatched %}
+        <h5>No students were matched to you.</h5>
+    {% else %}
+        {% if results|length > 1 %}
+            <h3>Assigned Students</h3>
         {% else %}
-            {% for result in results %}
-                <p>You are assigned to supervise {{result.student}} working on project {{result.project}}</p>
-            {% endfor %}
+            <h3>Assigned Student</h3>
         {% endif %}
+        {% for result in results %}
+            <table class = "result">
+                <tr>
+                    <th>
+                        <p class = "header">{{result.student}}</p> 
+                        <a href="javascript:showOrHide({{forloop.counter}})">
+                            <i id="arrow{{forloop.counter}}"class={% if results|length > 3 %}'fas fa-angle-right'{% else %}'fas fa-angle-down'{% endif %}></i>
+                        </a>
+                    </th>
+                </tr>
+                <tr class = "extra" id="showorhide{{forloop.counter}}">
+                    <td><p><b>Project: {{result.project}} - Email: {{result.student.user_profile.user.email}}</b></p>{{result.project.description}}</td>
+                </tr>
+            </table>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
+
+{% block style_block %}
+    h1,h3{
+        font-family: arial;
+    }
+    h1,.stage{
+        display:inline;
+    }
+    .stage{
+        background-color: green;
+        color: white;
+        padding: 5px;
+        border-radius:5px;
+        vertical-align:4px;
+    }
+    .header{
+        display:inline;
+        vertical-align:-3px;
+    }
+    .result{
+        width:100%;
+        border-collapse:collapse;
+        border-radius:5px;
+        border: 1px solid grey;
+        margin: 0 0 10px 0;
+    }
+    .result th{
+        text-align:left;
+        background-color:grey;
+        color:white;
+        font-size:24px;
+    }
+    .result th,td{
+        padding: 10px;
+        font-family:arial;
+        font-size: 16px;
+    }
+    .extra{
+        {% if results|length > 3 %}
+            display:none;
+        {% endif %}
+    }
+    i{
+        font-size:24px;
+        margin-right:10px;
+        float:right;
+        color:white;
+    }
+{% endblock%}
+
+{% block script_block %}
+<script type="text/javascript">
+    function showOrHide(i) 
+    {
+        var div = document.getElementById("showorhide"+i);
+        if (div.style.display == "block") 
+        {   
+            document.getElementById("arrow"+i).classList.remove('fa-angle-down');
+            document.getElementById("arrow"+i).classList.add('fa-angle-right');
+            div.style.display = "none";
+        }
+        else 
+        {
+            div.style.display = "block";
+            document.getElementById("arrow"+i).classList.remove('fa-angle-right');
+            document.getElementById("arrow"+i).classList.add('fa-angle-down');
+        }
+    }
+</script>
 {% endblock %}
