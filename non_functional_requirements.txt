@@ -1,0 +1,32 @@
+Must:
+Algorithm to generate output
+Bulk uploads - projects,students,lecturers,rankings
+output file - csv?
+
+Should:
+Admin matching output on web app
+Splitting allocations by instances (i.e. Maths Level 4 2021/22 and Maths Level 4 2022/23)
+Login classes - admins,students,lecturers
+Individual rankings
+If individual rankings, checks for admins
+List of projects to view
+Login to view allocation - lecturers and students - with contact details and ranks
+Lecturers uploading project proposals - assumed to be sensible not verified
+
+Could:
+Review of instance after results are released
+Deadlines for end of stage and holding state before next stage begins
+Super admin for controlling admin access - admins only see specific instances
+Admin control for any necessary edits, on behalf of lecturers or students
+Filter by tags
+Reminder to complete
+Lecturers setting supervision ability
+Drag and drop project rankings from list
+Edit choices after submitting but before deadline
+Correctness testing of alloa output
+
+Would be nice:
+Admin view of unpopular projects - should they be run in future
+Admin local changes to algorithm outcome, i.e if project is cancelled etc
+Auto close on deadline
+Extra details on supervisors

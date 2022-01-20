@@ -1,6 +1,9 @@
 {% extends 'alloa_matching/base.html' %}
 {% load staticfiles %}
 
+{% block optional_block %}
+{% endblock %}
+
 {% block body_block %}
     {% if messages %}
         <ul class="messages">
@@ -12,10 +15,43 @@
     <h1>Login</h1>
     <form id="login_form" method="post" action="{% url 'index' %}">
         {% csrf_token %}
-        Username: <input type="text" name="username" value="" size="50" />
+        <input type="text" placeholder="Username" name="username" value="" size="50" />
         <br />
-        Password: <input type="password" name="password" value="" size="50" />
+        <input type="password" placeholder="Password" name="password" value="" size="50" />
         <br />
-        <input type="submit" value="submit" />
+        <input type="submit" value="Login" />
     </form>
+{% endblock %}
+
+{% block style_block %}
+
+h1{
+    font-family:arial;
+    text-align:center;
+    margin-top:10%;
+}
+form{
+    width:40%;
+    margin:0 auto;
+}
+input[type=text], input[type=password] {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+input[type=submit] {
+    background-color: #228fe6;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    font-family:arial;
+    text-size:16px;
+}
 {% endblock %}

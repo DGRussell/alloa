@@ -1,0 +1,22 @@
+{% extends 'alloa_matching/base.html' %}
+{% load staticfiles %}
+
+{% block body_block %}
+        <div style = "margin-top:20px;"><h1>{{ instance.name }} - </h1><h3 class = "stage">New</h3></div>
+{% endblock %}
+
+{% block style_block %}
+        h1,h3,p{
+                font-family: arial;
+        }
+        h1,.stage{
+                display:inline;
+        }
+        .stage{
+                background-color: #4169e1;
+                color: white;
+                padding: 5px;
+                border-radius:5px;
+                vertical-align:4px;
+        }
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'alloa_matching/base.html' %}
+{% load staticfiles %}
+
+{% block body_block %}
+    <div style = "margin-top:20px;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Student Rankings</h3></div>
+    {% if unranked %}
+        <p>No ranks have been submitted for you and the project advisor level rankings have now closed.</p>
+    {% else %}
+        <p>Students are currently ranking their preferred projects, results will be published soon.</p>
+        {% if choices|length > 1 %}
+            <h3>Your Rankings</h3>
+        {% else %}
+            <h3>Your Ranking</h3>
+        {% endif %}
+        <table class = "choices">
+            <tr>
+                {% if choices|length > 1 %}
+                    <th>Choices</th>
+                {% else %}
+                    <th>Choice</th>
+                {% endif %}
+                <th>Description</th>
+                <th>Rank</th>
+            </tr>
+            {% for choice in choices %}
+                <tr>
+                    <td>{{ choice.project }}</td>
+                    <td>{{ choice.project.description }}</td>
+                    <td>{{ choice.level }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endblock %}
+
+{% block style_block %}
+    h1,h3,p{
+        font-family: arial;
+    }
+    h1,.stage{
+        display:inline;
+    }
+    .stage{
+        background-color: #c42525;
+        color: white;
+        padding: 5px;
+        border-radius:5px;
+        vertical-align:4px;
+    }
+    .choices{
+        width:100%;
+        border-collapse: collapse;
+    }
+    .choices th{
+        text-align:left;
+        background-color:grey;
+        color:white;
+    }
+    .choices th,td{
+        padding: 10px;
+        font-family:arial;
+        font-size: 16px;
+        border: 1px solid #ddd;
+    }
+    .choices tr:nth-child(even){
+        background-color: #f2f2f2;
+    }
+{% endblock %}

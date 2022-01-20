@@ -72,7 +72,9 @@
     }
     .extra{
         {% if results|length > 3 %}
-            display:none;
+            display:none;      
+        {% else %}
+            display:block;      
         {% endif %}
     }
     i{
@@ -88,17 +90,18 @@
     function showOrHide(i) 
     {
         var div = document.getElementById("showorhide"+i);
-        if (div.style.display == "block") 
+        console.log(div.style.display); 
+        if (div.style.display == "none") 
+        {   
+            div.style.display = "block";
+            document.getElementById("arrow"+i).classList.remove('fa-angle-right');
+            document.getElementById("arrow"+i).classList.add('fa-angle-down');
+        }
+        else 
         {   
             document.getElementById("arrow"+i).classList.remove('fa-angle-down');
             document.getElementById("arrow"+i).classList.add('fa-angle-right');
             div.style.display = "none";
-        }
-        else 
-        {
-            div.style.display = "block";
-            document.getElementById("arrow"+i).classList.remove('fa-angle-right');
-            document.getElementById("arrow"+i).classList.add('fa-angle-down');
         }
     }
 </script>

@@ -1,0 +1,130 @@
+{% extends 'alloa_matching/base.html' %}
+{% load staticfiles %}
+
+{% block head_block %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block body_block %}
+    <div style = "margin:20px 0;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Closed</h3></div>
+    <form action="{% url 'compute_matching' instance.id%}">
+        <input type="submit" value="Compute Matching" />
+    </form>
+    <h2>Student Rankings</h2>
+    <table id="results" class = "display">
+        <thead>
+            <tr>
+                <th>Student</th>
+                {% for r in range %}
+                    <th>Rank {{r}}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for student,student_result in results %}
+            <tr>
+                <td>{{student.user_profile.user.email}}</td>
+                {% for result in student_result %} 
+                        <td>{{result.project}}</td>
+                {% endfor %}
+
+            {% endfor %}
+            {% for result in unmatched %}
+                <tr style="background-color:#ff4d4d;" class = "unmatched">
+                    <td style="background-color:#ff4d4d;">{{result.user_profile.user.email}}</td>
+                    <td>Unmatched</td>
+                    <td>Unmatched</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Advisor Levels</h2>
+    <table id="projects" class = "display">
+        <thead>
+            <tr>
+                <th>Project</th>
+                <th>Academic</th>
+                <th>Level</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in projects %}
+            
+                {% for level in project %}
+                <tr> 
+                    <td>{{level.project}}</td>
+                    <td>{{level.academic}}</td>
+                    <td>{{level.level}}</td>
+                </tr>
+                {% endfor %}
+            
+            {% endfor %}
+            {% for result in unmatched %}
+                <tr style="background-color:#ff4d4d;" class = "unmatched">
+                    <td style="background-color:#ff4d4d;">{{result.user_profile.user.email}}</td>
+                    <td>Unmatched</td>
+                    <td>Unmatched</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block script_block %}
+    <script>
+        $(document).ready(function() { 
+            // DataTable
+            $('#results').DataTable();
+            $('#projects').DataTable();
+        });
+    </script>
+{% endblock %}
+
+{% block style_block %}
+    input[type=submit]{
+        cursor: pointer;
+        border-radius: 4px;
+        background-color: #4CAF50; /* Green */
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+    }
+    table{
+        font-family:arial;
+    }
+    .unmatched{
+        color:white;
+    }
+    .container{
+        padding: 0 1%;
+        margin-bottom:20px;
+    }
+    .dataTables_wrapper {
+        font-family: arial;
+        font-size: 15px;
+        position: relative;
+        clear: both;
+        *zoom: 1;
+        zoom: 1;
+    }
+    h1,h2,h3{
+        font-family: arial;
+    }
+    h1,.stage{
+        display:inline;
+    }
+    .stage{
+        background-color: #fcba03;
+        color: white;
+        padding: 5px;
+        border-radius:5px;
+        vertical-align:4px;
+    }
+{% endblock%}

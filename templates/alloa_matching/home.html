@@ -2,10 +2,47 @@
 {% load staticfiles %}
 
 {% block body_block %}
-    <h1>Instances</h1>
+    <h5>Hi, {{user.first_name}} {{user.last_name}}</h5>
     {% for instance in instances %}
-        <p><a href = {% url 'instance' instance.id %}>{{ instance.name }}</a></p>
+        {% if instance.stage == "R" %}
+            <div style = "margin-top:20px;"><h2><a href = {% url 'instance' instance.id %}>{{ instance.name }}</a> - </h2><h4 class = "r">Results Available</h4></div>
+        {% elif instance.stage == "C"%}
+            <div style = "margin-top:20px;"><h2><a href = {% url 'instance' instance.id %}>{{ instance.name }}</a> - </h2><h4 class = "c">Closed</h4></div>
+        {% elif instance.stage == "S"%}
+            <div style = "margin-top:20px;"><h2><a href = {% url 'instance' instance.id %}>{{ instance.name }}</a> - </h2><h4 class = "s">Student Preferences</h4></div>
+        {% elif instance.stage == "N"%}
+            <div style = "margin-top:20px;"><h2><a href = {% url 'instance' instance.id %}>{{ instance.name }}</a> - </h2><h4 class = "n">New</h4></div>
+        {% endif %}
     {% endfor %}
-    {{ user }}
-    {{ user_type }}
+{% endblock %}
+
+{% block style_block %}
+h2,h4,h5,p{
+    font-family: arial;
+}
+h5{
+    font-size:40px;
+    margin:1% 0;
+}
+h2,.c,.r,.s{
+    display:inline;
+}
+.c,.r,.s,.n{
+    color: white;
+    padding: 5px;
+    border-radius:5px;
+    vertical-align:2px;
+}
+.n{
+    background-color:#4169e1;
+}
+.c{
+    background-color: #fcba03;
+}
+.r{   
+    background-color: green;
+}
+.s{
+    background-color: #c42525;
+}
 {% endblock %}

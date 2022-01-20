@@ -175,3 +175,7 @@
 * *2 hours* Implementing data tables for admin view
 * *1 hour* Designing student results view
 * *2 hours* Designing academic results view
+
+### 12 Jan 2022 
+
+* *1 hour* Setting up instance generator to produce students.csv file with no preference list

@@ -11,7 +11,10 @@
         <div class = "navbar">
             <img src = "{% static 'images/uofg_logo.png'%}"/>
             <h1>Alloa Student-Project Matching Algorithm</h1>
-            <a href="{% url 'logout'%}">Logout</a>
+            {% block optional_block %}
+                <a href="{% url 'logout'%}">Logout</a>
+                <a href="{% url 'home'%}">Home </a>
+            {% endblock %}
         </div>
         <div class = "container">
             {% block body_block %}
@@ -28,6 +31,7 @@
             height:60px;
             background-color:#003865;
             padding:5px;
+            top:0;
         }
         .navbar img{
             height:60px;
