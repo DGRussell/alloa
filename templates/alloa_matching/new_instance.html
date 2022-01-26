@@ -3,6 +3,27 @@
 
 {% block body_block %}
         <div style = "margin-top:20px;"><h1>{{ instance.name }} - </h1><h3 class = "stage">New</h3></div>
+        <h2>Students - {{students|length}}</h2>
+        {% for student in students %}
+                <p>{{ student }}</p>
+        {% endfor %}
+        <h2>Academics - {{academics|length}}</h2>
+        {% for academic in academics %}
+                <p>{{ academic }}</p>
+        {% endfor %}
+        
+        <h2>Projects - {{projects|length}}</h2>
+        {% for project in projects %}
+                <p>{{ project }}</p>
+        {% endfor %}
+        <h2>Advisor Levels - {{levels|length}}</h2>
+        {% for level in levels %}
+                <p>{{ level }}</p>
+        {% endfor %}
+        <h2>Student Ranks - {{ranks|length}}</h2>
+        {% for rank in ranks %}
+                <p>{{ rank }}</p>
+        {% endfor %}
 {% endblock %}
 
 {% block style_block %}

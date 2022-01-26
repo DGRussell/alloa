@@ -120,6 +120,7 @@ class SPA_IG:
                     I.write('Project'+str(proj_num) + ',0,' + str(capacity) + ',ID' + str(lecturer)+',,') # write out info for project in required format
                     I.write('\n')
                 I.close()
+        # Only projects no advisor levels
         if instance_type == 3 or instance_type == 4:
             filename = 'projects'+str(k)+'.csv' # create projects.csv for kth instance
             with open(filename, 'w') as I:

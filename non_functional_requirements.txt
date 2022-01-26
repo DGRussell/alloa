@@ -24,6 +24,7 @@ Lecturers setting supervision ability
 Drag and drop project rankings from list
 Edit choices after submitting but before deadline
 Correctness testing of alloa output
+Host Website
 
 Would be nice:
 Admin view of unpopular projects - should they be run in future

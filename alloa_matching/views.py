@@ -61,73 +61,234 @@ def upload(request):
             students,student_headings = file_read(request.FILES["students"])
             academics,academic_headings = file_read(request.FILES["academics"])
 
-            if request.FILES.get("projects",False):
-                # if a projects file has been uploaded, create its dictionary and headings file and calculate the instance type
-                projects,project_headings = file_read(request.FILES["projects"])
-                instance_type = get_instance_type(student_headings,project_headings)
+            # List of values to set as default, and potential list of reasons why files are invalid
+            defaults = []
+            reasons = []
+            # Prepare academic headings for validity check
+            academic_headings[len(academic_headings)-1] = academic_headings[len(academic_headings)-1].replace("\r","")
+            academics_valid = True
+
+            # Staff ID, Supervisor Firstname and Supervisor Surname must be in headings, otherwise not valid file
+            if "Staff ID" not in academic_headings:
+                academics_valid = False
+                reasons.append("No Staff ID column")
+            if "Supervisor Firstname" not in academic_headings:
+                academics_valid = False
+                reasons.append("No academic firstname column")
+            if "Supervisor Surname" not in academic_headings:
+                academics_valid = False
+                reasons.append("No academic surname column")
+            
+            # If no capacities given then assume 1 and 0
+            if len(academic_headings) == 3:
+                defaults.append("Supervisor Upper Capacity")
+                defaults.append("Supervisor Lower Capacity")
+
+            # If one capacity given, assume the other is 1 or 0 respectively
+            if len(academic_headings) == 4:
+                if "Supervisor Lower Capacity" in academic_headings:
+                    defaults.append("Supervisor Upper Capacity")
+                elif "Supervisor Upper Capacity" in academic_headings:
+                    defaults.append("Supervisor Lower Capacity")
+                else:
+                    academics_valid = False
+                    reasons.append("Invalid 4th column, should be either Supervisor Lower Capacity or Supervisor Upper Capacity")
+
+            # If both are given check they are valid
+            elif len(academic_headings) == 5:
+                if "Supervisor Lower Capacity" not in academic_headings:
+                    academics_valid = False
+                if "Supervisor Upper Capacity" not in academic_headings:
+                    academics_valid = False
+            # If more than 5 headers or less than 3, then the file is invalid
             else:
-                # otherwise instance type can only be a projectless instance
+                academics_valid = False
+                reasons.append("Too many columns in academics file")
+            
+            # Prepare student headings for validity check
+            student_headings[len(student_headings)-1] = student_headings[len(student_headings)-1].replace("\r","")
+            students_valid = True
+
+            # If matric no, firstname or surname are not provided then file is invalid
+            if "Matric Number" not in student_headings:
+                students_valid = False
+                reasons.append("Matric Number column missing")
+            if "Student Firstname" not in student_headings:
+                students_valid = False
+                reasons.append("Student firstname column missing")
+            if "Student Surname" not in student_headings:
+                students_valid = False
+                reasons.append("Student surname column missing")
+
+            # Check if capacities are provided, if they arent then assume they are 0 and 1 respectively, if they are then the minimum number of headings stays high
+            students_min_length = 5
+            if "Student Lower Capacity" not in student_headings:
+                students_min_length -= 1
+                defaults.append("Student Lower Capacity")
+            if "Student Upper Capacity" not in student_headings:
+                students_min_length -= 1
+                defaults.append("Student Upper Capacity")
+
+            
+            if request.FILES.get("projects",False):
+                # if a projects file has been uploaded, create its dictionary and headings file
+                projects,project_headings = file_read(request.FILES["projects"])
+
+                # Prepare project heading for validity checks
+                project_headings[len(project_headings)-1] = project_headings[len(project_headings)-1].replace("\r","")
+                projects_valid = True  
+
+                # If project name not in file then projects file isn't valid
+                if "Project" not in project_headings:
+                    projects_valid = False
+                    reasons.append("Project name column missing")
+
+                # Check if project capacities have been supplied, if not then reduce the minimum headings length and assume 0 or 1 respectively
+                projects_min_length = 3
+                if "Project Lower Capacity" not in project_headings:
+                    projects_min_length -= 1
+                    defaults.append("Project Lower Capacity")
+                if "Project Upper Capacity" not in project_headings:
+                    projects_min_length -= 1
+                    defaults.append("Project Upper Capacity") 
+                
+                # Calculate instance type
+                instance_type = get_instance_type(student_headings, students_min_length, project_headings, projects_min_length)
+                
+                # If student ranks have been provided then check each one
+                if instance_type == "all_rankings" or instance_type == "no_academic_rankings":
+                    i = 0
+                    # For each heading check it is the next expected one (always from 1 upwards)
+                    for heading in student_headings[students_min_length:]:
+                        i+=1 
+                        if heading != ("Choice " + str(i)):    
+                            students_valid = False
+                            reasons.append("Choice " + str(i) + " column missing from student rankings")
+                    # Get max number of provided ranks 
+                    num_student_ranks = i
+
+                # If advisor ranks have been supplied then check they are in expected order (1 upwards)
+                if instance_type == "all_rankings" or instance_type == "no_student_rankings":
+                    i = 0
+                    # Check each heading is as expected, if not file is invalid
+                    for heading in project_headings[projects_min_length:]:
+                        i+=1
+                        if heading != ("Choice " + str(i)):
+                            projects_valid = False
+                            reasons.append("Choice " + str(i) + " column missing from project rankings")
+                    # Get max number of advisor ranks per project
+                    num_advisor_ranks = i      
+            else:
+                # otherwise instance type can only be a projectless instance, therefore check no ranking information has been provided in studennts file
+                if len(student_headings) > min_length:
+                    students_valid = False
+                    reasons.append("Too many columns in student file")
                 instance_type="no_projects"
 
-            # Create a new instance for uploaded files
-            instance = Instance.objects.get_or_create(name=form.cleaned_data.get("name"),level=form.cleaned_data.get("level"),stage="N")[0]
-            instance.save()
+            if students_valid and projects_valid and academics_valid:
+                # Create a new instance for uploaded files
+                instance = Instance.objects.get_or_create(name=form.cleaned_data.get("name"),level=form.cleaned_data.get("level"),stage="N")[0]
+                instance.save()
 
-            # For each academic make them a user and an academic profile
-            for i in range(len(academics)):
-                user = User.objects.get_or_create(username=academics[i]["Staff ID"], first_name=academics[i]["Supervisor Firstname"],last_name=academics[i]["Supervisor Surname"],email=academics[i]["Staff ID"]+"@glasgow.ac.uk")[0]
-                user.set_password("TestPass1")
-                user.save()
-                user_profile = UserProfile.objects.get_or_create(user=user,user_type="AC",unique_id=academics[i]["Staff ID"])[0]
-                user_profile.save()
-                academic = Academic.objects.get_or_create(user_profile=user_profile,instance=instance,upper_cap=int(academics[i]["Supervisor Upper Capacity"]),lower_cap=int(academics[i]["Supervisor Lower Capacity"]))[0]
-                academic.save()
+                # For each academic 
+                for i in range(len(academics)):
+                    # If user already exists then fetch
+                    if User.objects.filter(username = academics[i]["Staff ID"]).exists():
+                        user = User.objects.get(username = academics[i]["Staff ID"])
+                        user_profile = UserProfile.objects.get(user=user)
 
-            # if projects uploaded - For each project create the project model
-            if instance_type != "no_projects":
-                for i in range(len(projects)):
-                    project = Project.objects.get_or_create(instance=instance,name=projects[i]["Project"],upper_cap=int(projects[i]["Project Upper Capacity"]),lower_cap=int(projects[i]["Project Lower Capacity"]),description="Test add")[0]
-                    # If advisor preferences have been uploaded, save them
-                    if instance_type == "all_rankings" or instance_type == "no_student_rankings": 
-                        if projects[i]["Choice 1"] != '':
-                            user = User.objects.get(username=projects[i]["Choice 1"])
-                            user_profile = UserProfile.objects.get(user=user)
-                            academic = Academic.objects.get(user_profile=user_profile,instance=instance)
-                            alevel = AdvisorLevel.objects.get_or_create(project=project, academic=academic, level=1)[0]
-                            alevel.save()
-                        if projects[i]["Choice 2"] != '':
-                            user = User.objects.get(username=projects[i]["Choice 2"])
-                            user_profile = UserProfile.objects.get(user=user)
-                            academic = Academic.objects.get(user_profile=user_profile,instance=instance)
-                            alevel = AdvisorLevel.objects.get_or_create(project=project, academic=academic, level=2)[0]
-                            alevel.save()
-                        if projects[i]["Choice 3"] != '':
-                            user = User.objects.get(username=projects[i]["Choice 3"])
-                            user_profile = UserProfile.objects.get(user=user)
-                            academic = Academic.objects.get(user_profile=user_profile,instance=instance)
-                            alevel = AdvisorLevel.objects.get_or_create(project=project, academic=academic, level=3)[0]
-                            alevel.save()
-            
-            # For each student create a user and student object
-            for i in range(len(students)):
-                first_name = students[i]["Student Firstname"]
-                last_name = students[i]["Student Surname"]
-                matric = students[i]["Matric Number"]
-                user = User.objects.get_or_create(username=matric,first_name=first_name,last_name=last_name,email=matric+"@student.gla.ac.uk")[0]
-                user.set_password("TestPass1")
-                user.save()
-                user_profile = UserProfile.objects.get_or_create(user=user,user_type="ST",unique_id=matric)[0]
-                user_profile.save()
-                student = Student.objects.get_or_create(user_profile=user_profile,instance=instance,upper_cap=students[i]["Student Upper Capacity"],lower_cap=students[i]["Student Lower Capacity"])[0]
-                student.save()
-                # If student ranks have been uploaded then save them
-                if instance_type == "all_rankings" or instance_type == "no_academic_rankings":
-                    for j in range(7):
-                        project = Project.objects.get(name=students[i]["Choice "+str(j+1)],instance=instance)
-                        choice = Choice.objects.get_or_create(student=student,project=project,rank=j+1)[0]
-                        choice.save()
-            # Redirect to individual page for new instance
-            return redirect(reverse('instance', kwargs={"instance_id": instance.id}))
+                    # If not then create a new user and corresponding profile
+                    else:
+                        user = User(username=academics[i]["Staff ID"], first_name=academics[i]["Supervisor Firstname"],last_name=academics[i]["Supervisor Surname"],email=academics[i]["Staff ID"]+"@glasgow.ac.uk")
+                        user.save()
+                        user.set_password("TestPass1")
+                        user.save()
+                        user_profile = UserProfile(user=user,user_type="AC",unique_id=academics[i]["Staff ID"])
+                        user_profile.save()
+
+                    # Either set capacities to default values or provided values
+                    if "Supervisor Lower Capacity" in defaults:
+                        sup_l_cap = 0
+                    else:
+                        sup_l_cap = int(academics[i]["Supervisor Lower Capacity"])
+                    if "Supervisor Upper Capacity" in defaults:
+                        sup_u_cap = 1
+                    else:
+                        sup_u_cap = int(academics[i]["Supervisor Upper Capacity"])
+
+                    # Create new academic object for the instance and save
+                    academic = Academic(user_profile=user_profile,instance=instance,upper_cap=sup_u_cap,lower_cap=sup_l_cap)
+                    academic.save()
+
+                # if projects uploaded - For each project create the project model
+                if instance_type != "no_projects":
+                    for i in range(len(projects)):
+                        # Either set capacities to default values or provided values
+                        if "Project Lower Capacity" in defaults:
+                            pro_l_cap = 0
+                        else:
+                            pro_l_cap = int(projects[i]["Project Lower Capacity"])
+                        if "Project Upper Capacity" in defaults:
+                            pro_u_cap = 1
+                        else:
+                            pro_u_cap = int(projects[i]["Project Upper Capacity"])
+                        project = Project(instance=instance,name=projects[i]["Project"],upper_cap=pro_u_cap,lower_cap=pro_l_cap,description="Test add")
+                        project.save()
+                        # If advisor preferences have been uploaded, save them
+                        if instance_type == "all_rankings" or instance_type == "no_student_rankings": 
+                            for i in range(num_advisor_ranks):
+                                choice = "Choice " + str(i+1)
+                                if projects[i][choice] != '':
+                                    user = User.objects.get(username=projects[i][choice])
+                                    user_profile = UserProfile.objects.get(user=user)
+                                    academic = Academic.objects.get(user_profile=user_profile,instance=instance)
+                                    alevel = AdvisorLevel(project=project, academic=academic, level=i+1)
+                                    alevel.save()
+                
+                # For each student create a user and student object
+                for i in range(len(students)):
+                    first_name = students[i]["Student Firstname"]
+                    last_name = students[i]["Student Surname"]
+                    matric = students[i]["Matric Number"]
+                    if User.objects.filter(username = matric).exists():
+                        user = User.objects.get(username = matric)
+                        user_profile = UserProfile.objects.get(user=user)
+
+                    # If not then create a new user and corresponding profile
+                    else:
+                        user =  User(username=matric,first_name=first_name,last_name=last_name,email=matric+"@student.gla.ac.uk")
+                        user.save()
+                        user.set_password("TestPass1")
+                        user.save()
+                        user_profile = UserProfile(user=user,user_type="ST",unique_id=matric)
+                        user_profile.save()
+
+                    # Either set capacities to default values or provided values
+                    if "Student Lower Capacity" in defaults:
+                        stu_l_cap = 0
+                    else:
+                        stu_l_cap = students[i]["Student Lower Capacity"]
+                    if "Student Upper Capacity" in defaults:
+                        stu_u_cap = 1
+                    else:
+                        stu_u_cap = students[i]["Student Upper Capacity"]
+
+                    student = Student(user_profile=user_profile,instance=instance,upper_cap=stu_u_cap,lower_cap=stu_l_cap)
+                    student.save()
+                    # If student ranks have been uploaded then save them
+                    if instance_type == "all_rankings" or instance_type == "no_academic_rankings":
+                        for j in range(num_student_ranks):
+                            choice = "Choice " + str(j+1)
+                            if students[i][choice] != '':
+                                project = Project.objects.get(name=students[i]["Choice "+str(j+1)],instance=instance)
+                                choice = Choice.objects.get_or_create(student=student,project=project,rank=j+1)[0]
+                                choice.save()
+                # Redirect to individual page for new instance
+                return redirect(reverse('instance', kwargs={"instance_id": instance.id}))
+            else:
+                for reason in reasons:
+                    messages.error(request, reason)
+
     else:
         form = UploadForm()
     context_dict['form'] = form
@@ -222,6 +383,23 @@ def instance(request, instance_id):
     # If instance is awaiting student preferences
     if instance.stage == "N":
         if request.session["user_type"] == "AD" or request.session["user_type"] == "SA":
+            context_dict["students"] = Student.objects.filter(instance=instance)
+            context_dict["academics"] = Academic.objects.filter(instance=instance)
+            context_dict["projects"] = Project.objects.filter(instance=instance)
+            ranks = []
+            levels = []
+
+            for student in context_dict["students"]:
+                rank = Choice.objects.filter(student=student)
+                for r in rank:
+                    ranks.append(r)
+            for academic in context_dict["academics"]:
+                level = AdvisorLevel.objects.filter(academic=academic)
+                for l in level:
+                    levels.append(l)
+            context_dict["ranks"] = ranks
+            context_dict["levels"] = levels
+
             return render(request, 'alloa_matching/new_instance.html',context=context_dict)
         else:
             messages.error(request,"This instance is not currently available to you.")
@@ -413,14 +591,14 @@ def instance(request, instance_id):
 #                                         #
 ###########################################
 
-def get_instance_type(student_headings,project_headings):
+def get_instance_type(student_headings,students_min_length,project_headings,projects_min_length):
     
-    if len(student_headings) > 5:
-        if len(project_headings) > 3:
+    if len(student_headings) > students_min_length:
+        if len(project_headings) > projects_min_length:
             return "all_rankings"
         else:
             return "no_academic_rankings"
-    elif len(project_headings) > 3:
+    elif len(project_headings) > projects_min_length:
         return "no_student_rankings"
     else:
         return "no_rankings"
