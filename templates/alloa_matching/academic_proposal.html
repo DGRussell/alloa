@@ -1,0 +1,172 @@
+{% extends 'alloa_matching/base.html' %}
+{% load staticfiles %}
+
+{% block head_block %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script src="https://kit.fontawesome.com/2e8b22a65b.js" crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block body_block %}
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <div style = "margin:20px 0;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Project Proposal</h3></div>
+    <div style = "width:49.5%; float:left;">
+        {% if results|length > 1 %}
+            <h3>Projects</h3>
+        {% else %}
+            <h3>Project</h3>
+        {% endif %}
+        {% for result in results %}
+            <table class = "result">
+                <tr>
+                    <th>
+                        <p class = "header">{{result.name}}</p> 
+                        <a href="javascript:showOrHide({{forloop.counter}})">
+                            <i id="arrow{{forloop.counter}}"class='fas fa-angle-down'></i>
+                        </a>
+                    </th>
+                </tr>
+                <tr class = "extra" id="showorhide{{forloop.counter}}">
+                    <td>{{result.description}}</td>
+                </tr>
+            </table>
+        {% endfor %}
+    </div>
+    <div id = "form" style = "width:48%;float:right;left:50.5%;">
+        <h3>Propose a New Project</h3>
+        <form action="{% url 'instance' instance.id %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="id_name">Project Name:</label>
+            <input type="text" name="name" maxlength="200" required="" id="id_name">
+            
+            <label for="id_name">Project Description:</label>
+            <input type="text" name="description" maxlength="200" required="" id="id_description">
+            <div class = "capacities">
+                <label for="id_level">Upper Capacity:</label>
+                <input type="number" name="upper_cap" maxlength="200" required="" id="id_upper">
+            </div>
+            <div class = "capacities" style = "margin-left:2%;">
+                <label for="id_level">Lower Capacity:</label>
+                <input type="number" name="lower_cap" maxlength="200" required="" id="id_lower">
+            </div>
+            <input type="submit" name = "proposal" value="Submit">
+        </form>
+    </div>
+{% endblock %}
+
+{% block style_block %}
+    h1,h3,label{
+        font-family: arial;
+    }
+    h1,.stage{
+        display:inline;
+    }
+    .stage{
+        background-color: #14baa1;
+        color: white;
+        padding: 5px;
+        border-radius:5px;
+        vertical-align:4px;
+    }
+    .header{
+        display:inline;
+        vertical-align:-3px;
+    }
+    .result{
+        width:100%;
+        border-collapse:collapse;
+        border-radius:5px;
+        border: 1px solid grey;
+        margin: 0 0 10px 0;
+    }
+    .result th{
+        text-align:left;
+        background-color:grey;
+        color:white;
+        font-size:24px;
+    }
+    .result th,td{
+        padding: 10px;
+        font-family:arial;
+        font-size: 16px;
+    }
+    .extra{
+        display:block; 
+    }
+    i{
+        font-size:24px;
+        margin-right:10px;
+        float:right;
+        color:white;
+    }
+    .fix-form{
+        position:fixed;
+        left:50.5%;
+        top:0;
+    }
+    input[type=submit] {
+        background-color: #228fe6;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        font-family:arial;
+        font-size:16px;
+    }
+    input[type=text], input[type=number] {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+    }
+    .capacities{
+        width:49%;
+        float:left;
+    }
+{% endblock%}
+
+{% block script_block %}
+<script type="text/javascript">
+    function showOrHide(i) 
+    {
+        var div = document.getElementById("showorhide"+i);
+        console.log(div.style.display); 
+        if (div.style.display == "none") 
+        {   
+            div.style.display = "block";
+            document.getElementById("arrow"+i).classList.remove('fa-angle-right');
+            document.getElementById("arrow"+i).classList.add('fa-angle-down');
+        }
+        else 
+        {   
+            document.getElementById("arrow"+i).classList.remove('fa-angle-down');
+            document.getElementById("arrow"+i).classList.add('fa-angle-right');
+            div.style.display = "none";
+        }
+    }
+    
+
+    $(window).scroll(function(){
+        if ($(this).scrollTop() >= 156) {
+            $('#form').css('position', 'fixed');
+            $('#form').css('top', '0');
+        } 
+        if ($(this).scrollTop() < 156){
+            $('#form').css('position', 'absolute');
+            $('#form').css('top', '156px');
+        }
+        console.log($(this).scrollTop());
+    }); 
+
+</script>
+{% endblock %}

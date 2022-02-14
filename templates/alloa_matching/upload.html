@@ -2,10 +2,152 @@
 {% load staticfiles %}
 
 {% block body_block %}
-    <h1>Upload Page</h1>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <h1>New Instance</h1>
+    <h3>File Templates</h3>
+    <a href="{% static 'files/student_template.csv'%}" download><label class = "download">Students CSV Template</label></a>
+    <a href="{% static 'files/project_template.csv'%}" download><label class = "download">Projects CSV Template</label></a>
+    <a href="{% static 'files/academic_template.csv'%}" download><label class = "download">Academics CSV Template</label></a>
     <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}
+        <h3>Instance Details</h3>
+        <label for="id_name">Course Name:</label>
+        <input type="text" name="name" maxlength="200" required="" id="id_name">
+
+        <label for="id_level">Course Level:</label>
+        <input type="number" name="level" maxlength="200" required="" id="id_level"><p></p>
+
+        <h3>Instance Files</h3>
+        <p>Valid file uploads include: Only student and academic details provided, student, academic and project details provided, all details and advisor levels provided, all details and student rankings provided, all details and both advisor levels and student rankings provided.</p> 
+        <input type="file" name="students" maxlength="200" required="" id="id_students" class = "fileinput">
+        <label for="id_students">Students CSV File</label><span class="student-file-name"></span><p></p>
+
+        <input type="file" name="projects" maxlength="200" id="id_projects" class = "fileinput">
+        <label for="id_projects">Projects CSV File</label><span class="project-file-name"></span><p></p>
+
+        <input type="file" name="academics" maxlength="200" required="" id="id_academics" class = "fileinput">
+        <label for="id_academics">Academics CSV File</label><span class="academic-file-name"></span><p></p>
+
         <input type="submit" name = "full_upload" value="Submit">
     </form>
+{% endblock %}
+
+{% block style_block %}
+
+    h1,h3,a,p,label,span{
+        font-family:arial;
+    }
+    span{
+        margin-left: 20px;
+    }
+    a{
+        margin-right: 20px;
+    }
+    input[type=text], input[type=number], input[type=file] {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+    }
+    
+    .fileinput{
+        width: 0.1px;
+        height: 0.1px;
+        opacity: 0;
+        overflow: hidden;
+        position: absolute;
+        z-index: -1;
+    }
+
+    .fileinput + label, .download {
+        padding:10px;
+        font-size:16px;
+        display: inline-block;
+        cursor:pointer;
+    }
+
+    .fileinput +label{
+        color:#228fe6;
+        background-color: white;
+        border:1px solid #228fe6;
+    }
+    .fileinput:hover + label {
+        color:white;
+        background-color: #228fe6;
+    }
+    .download{
+        color:white;
+        background-color: #0ec45d;
+        border:1px solid #0ec45d;
+    }
+    .download:hover{
+        color:#0ec45d;
+        background-color: white;
+    }
+    input[type=submit] {
+        background-color: #228fe6;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        font-family:arial;
+        font-size:16px;
+    }
+{% endblock %}
+
+{% block script_block %}
+
+<script>
+    const studentfile = document.querySelector('#id_students');
+    const projectfile = document.querySelector('#id_projects');
+    const academicfile = document.querySelector('#id_academics');
+
+    studentfile.addEventListener('change', (e) => {
+        // Get the selected file
+        const [studentfile] = e.target.files;
+        // Get the file name and size
+        const { name: studentfileName, size } = studentfile;
+        // Convert size in bytes to kilobytes
+        const studentfileSize = (size / 1000).toFixed(2);
+        // Set the label text
+        const studentfileNameAndSize = `${studentfileName} - ${studentfileSize}KB`;
+        document.querySelector('.student-file-name').textContent = studentfileNameAndSize;
+    });
+
+    projectfile.addEventListener('change', (e) => {
+        // Get the selected file
+        const [projectfile] = e.target.files;
+        // Get the file name and size
+        const { name: projectfileName, size } = projectfile;
+        // Convert size in bytes to kilobytes
+        const projectfileSize = (size / 1000).toFixed(2);
+        // Set the label text
+        const projectfileNameAndSize = `${projectfileName} - ${projectfileSize}KB`;
+        document.querySelector('.project-file-name').textContent = projectfileNameAndSize;
+    });
+
+    academicfile.addEventListener('change', (e) => {
+        // Get the selected file
+        const [academicfile] = e.target.files;
+        // Get the file name and size
+        const { name: academicfileName, size } = academicfile;
+        // Convert size in bytes to kilobytes
+        const academicfileSize = (size / 1000).toFixed(2);
+        // Set the label text
+        const academicfileNameAndSize = `${academicfileName} - ${academicfileSize}KB`;
+        document.querySelector('.academic-file-name').textContent = academicfileNameAndSize;
+    });
+
+</script>
+
 {% endblock %}

@@ -1,48 +1,106 @@
 {% extends 'alloa_matching/base.html' %}
 {% load staticfiles %}
 
+{% block head_block %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+{% endblock %}
+
 {% block body_block %}
-    <h5>Hi, {{user.first_name}} {{user.last_name}}</h5>
-    {% for instance in instances %}
-        {% if instance.stage == "R" %}
-            <div style = "margin-top:20px;"><h2><a href = {% url 'instance' instance.id %}>{{ instance.name }}</a> - </h2><h4 class = "r">Results Available</h4></div>
-        {% elif instance.stage == "C"%}
-            <div style = "margin-top:20px;"><h2><a href = {% url 'instance' instance.id %}>{{ instance.name }}</a> - </h2><h4 class = "c">Closed</h4></div>
-        {% elif instance.stage == "S"%}
-            <div style = "margin-top:20px;"><h2><a href = {% url 'instance' instance.id %}>{{ instance.name }}</a> - </h2><h4 class = "s">Student Preferences</h4></div>
-        {% elif instance.stage == "N"%}
-            <div style = "margin-top:20px;"><h2><a href = {% url 'instance' instance.id %}>{{ instance.name }}</a> - </h2><h4 class = "n">New</h4></div>
-        {% endif %}
-    {% endfor %}
+    <h1>Hi, {{user.first_name}} {{user.last_name}}</h1>
+    {% if user_type == "SA" or user_type == "A" %}
+        <a href = "{% url 'upload' %}"><label class = "upload">Upload a New Instance</label></a>
+    {% endif %}
+    <h2>Your Instances</h2>
+    <table id="instances" class = "display">
+        <thead>
+            <tr>
+                <th>Instance</th>
+                <th>Stage</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for instance in instances %}
+                <tr>
+                    <td><a href = "{% url 'instance' instance.id%}">{{instance.name}}</td>
+                    {% if instance.stage == "R" %}
+                        <td class = "{{instance.stage}}">Results Available</td>
+                    {% elif instance.stage == "C"%}
+                        <td class = "{{instance.stage}}">Closed</td>        
+                    {% elif instance.stage == "S"%}
+                        <td class = "{{instance.stage}}">Student Rankings</td> 
+                    {% elif instance.stage == "L"%}
+                        <td class = "{{instance.stage}}">Advisor Level Rankings</td>
+                    {% elif instance.stage == "P"%}
+                        <td class = "{{instance.stage}}">Project Proposal</td> 
+                    {% elif instance.stage == "N"%}
+                        <td class = "{{instance.stage}}">New</td>  
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block script_block %}
+    <script>
+        $(document).ready(function() { 
+            // DataTable
+            $('#instances').DataTable({
+                "ordering": false
+            });
+        });
+    </script>
 {% endblock %}
 
 {% block style_block %}
-h2,h4,h5,p{
+h1,h2,h4,h5,p,label{
     font-family: arial;
 }
-h5{
-    font-size:40px;
-    margin:1% 0;
+table{
+    font-family:arial;
 }
-h2,.c,.r,.s,.n{
-    display:inline;
-}
-.c,.r,.s,.n{
+.R,.S,.N,.L,.P{
     color: white;
-    padding: 5px;
-    border-radius:5px;
-    vertical-align:2px;
 }
-.n{
+.N{
     background-color:#4169e1;
 }
-.c{
-    background-color: #fcba03;
+.C{
+    background-color: #f0d805;
 }
-.r{   
+.R{   
     background-color: green;
 }
-.s{
+.S{
     background-color: #c42525;
+}
+.P{
+    background-color:#14baa1;
+}
+.L{
+    background-color:#e89015;
+}
+.dataTables_wrapper {
+    font-family: arial;
+    font-size: 15px;
+    position: relative;
+    clear: both;
+    *zoom: 1;
+    zoom: 1;
+}
+.upload {
+    padding:10px;
+    font-size:16px;
+    display: inline-block;
+    cursor:pointer;
+    color:white;
+    background-color: #228fe6;
+    border:1px solid #228fe6;
+}
+.upload:hover {
+    color:#228fe6;
+    background-color: white;
 }
 {% endblock %}

@@ -1,33 +1,121 @@
 {% extends 'alloa_matching/base.html' %}
 {% load staticfiles %}
 
+{% block head_block %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+{% endblock %}
+
 {% block body_block %}
         <div style = "margin-top:20px;"><h1>{{ instance.name }} - </h1><h3 class = "stage">New</h3></div>
+        <h2>Next Stages</h2>
+        <a href = "{% url 'set_stage' instance.id 'P' %}" onclick="return confirm('Are you sure you want to move to the project proposal stage, you cannot go back after this?')"><label class = "proposal">Project Proposal</label></a>
+        {% if projects|length != 0 %} 
+                <a href = "{% url 'set_stage' instance.id 'L' %}" onclick="return confirm('Are you sure you want to move to the advisor level ranking stage, you cannot go back after this?')"><label class = "advisor">Advisor Level Rankings</label></a>
+                {% if all_levels %}  
+                        <a href = "{% url 'set_stage' instance.id 'S' %}" onclick="return confirm('Are you sure you want to move to the student ranking stage, you cannot go back after this?')"><label class = "student">Student Rankings</label></a>
+                {% endif %}
+                {% if all_ranks and all_levels %}
+                        <a href = "{% url 'set_stage' instance.id 'C' %}" onclick="return confirm('Are you sure you want to move to the closed stage, you cannot go back after this?')"><label class = "closed">Closed</label></a>
+                {% endif %}
+        {% endif %}
+        
+
         <h2>Students - {{students|length}}</h2>
-        {% for student in students %}
-                <p>{{ student }}</p>
-        {% endfor %}
+        <table id="students" class = "display">
+                <thead>
+                    <tr>
+                        <th>Matric Number</th>
+                        {% if student_ranks %}
+                                {% for r in range %}
+                                <th>Rank {{forloop.counter}}</th>
+                                {% endfor %}
+                        {% else %}
+                                <th>First Name</th>
+                                <th>Surname</th>
+                        {% endif %}  
+                    </tr>
+                </thead>
+                <tbody>
+                        {% if student_ranks %}
+                                {% for key,value in ranks.items %}
+                                <tr>
+                                        <td>{{key}}</td>
+                                        {% for rank in value %} 
+                                                <td>{{rank}}</td>
+                                        {% endfor %}
+                                </tr>      
+                                {% endfor %} 
+                        {% else %}
+                                {% for student in students %}
+                                <tr>
+                                        <td>{{student.user_profile.unique_id}}</td>
+                                        <td>{{student.user_profile.user.first_name}}</td>
+                                        <td>{{student.user_profile.user.last_name}}</td>
+                                </tr>
+                                {% endfor %}
+                        {% endif %}
+                </tbody>
+        </table>
         <h2>Academics - {{academics|length}}</h2>
-        {% for academic in academics %}
-                <p>{{ academic }}</p>
-        {% endfor %}
+        <table id="academics" class = "display">
+                <thead>
+                    <tr>
+                        <th>Staff ID</th>
+                        <th>First Name</th>
+                        <th>Surname</th>
+                    </tr>
+                </thead>
+                <tbody>
+                        {% for a in academics %}
+                        <tr>
+                                <td>{{a.user_profile.unique_id}}</td>
+                                <td>{{a.user_profile.user.first_name}}</td>
+                                <td>{{a.user_profile.user.last_name}}</td>
+                        </tr>      
+                        {% endfor %}  
+                </tbody>
+        </table>
         
         <h2>Projects - {{projects|length}}</h2>
-        {% for project in projects %}
-                <p>{{ project }}</p>
-        {% endfor %}
-        <h2>Advisor Levels - {{levels|length}}</h2>
-        {% for level in levels %}
-                <p>{{ level }}</p>
-        {% endfor %}
-        <h2>Student Ranks - {{ranks|length}}</h2>
-        {% for rank in ranks %}
-                <p>{{ rank }}</p>
-        {% endfor %}
+        <table id="projects" class = "display">
+                <thead>
+                    <tr>
+                        <th>Project Name</th>
+                        {% if advisor_levels %}
+                                {% for r in advisor_range %}
+                                        <th>Choice {{ forloop.counter }}</th>
+                                {% endfor %}
+                        {% else %}
+                                <th>Description</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                        {% if advisor_levels %}
+                                {% for key,value in levels.items %}
+                                <tr>
+                                        <td>{{key}}</td>
+                                        {% for v in value %}
+                                                <td>{{v.academic.user_profile.unique_id}}</td>
+                                        {% endfor %}
+                                </tr>      
+                                {% endfor %} 
+                        {% else %}
+                                {% for p in projects %}
+                                <tr>
+                                        <td>{{ p.name }}</td>
+                                        <td>{{ p.description }}</td>
+                                </tr>
+                                {% endfor %}
+                        {% endif %} 
+                </tbody>
+        </table>
 {% endblock %}
 
 {% block style_block %}
-        h1,h3,p{
+        h1,h2,h3,p,label{
                 font-family: arial;
         }
         h1,.stage{
@@ -40,4 +128,69 @@
                 border-radius:5px;
                 vertical-align:4px;
         }
+        table{
+                font-family:arial;
+        }
+        .dataTables_wrapper {
+                font-family: arial;
+                font-size: 15px;
+                position: relative;
+                clear: both;
+                *zoom: 1;
+                zoom: 1;
+        }
+        .proposal, .advisor, .student,.closed {
+                padding:10px;
+                font-size:16px;
+                display: inline-block;
+                cursor:pointer;
+        }
+        .proposal{
+                color:white;
+                background-color: #14baa1;
+                border:1px solid #14baa1;
+        }
+        .proposal:hover {
+                color:#14baa1;
+                background-color: white;
+        }
+        .advisor{
+                color:white;
+                background-color: #e89015;
+                border:1px solid #e89015;
+        }
+        .advisor:hover {
+                color:#e89015;
+                background-color: white;
+        }
+        .student{
+                color:white;
+                background-color: #c42525;
+                border:1px solid #c42525;
+        }
+        .student:hover {
+                color:#c42525;
+                background-color: white;
+        }
+        .closed{
+                color:white;
+                background-color: #f0d805;
+                border:1px solid #f0d805;
+        }
+        .closed:hover {
+                color:#f0d805;
+                background-color: white;
+        }
+        
+{% endblock %}
+
+{% block script_block %}
+    <script>
+        $(document).ready(function() { 
+            // DataTable
+            $('#students').DataTable();
+            $('#academics').DataTable();
+            $('#projects').DataTable();
+        });
+    </script>
 {% endblock %}

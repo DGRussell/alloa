@@ -9,9 +9,7 @@
 
 {% block body_block %}
     <div style = "margin:20px 0;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Closed</h3></div>
-    <form action="{% url 'compute_matching' instance.id%}">
-        <input type="submit" value="Compute Matching" />
-    </form>
+    <a href = "{% url 'compute_matching' instance.id %}" onclick="return confirm('Are you sure you want to move to the results stage, you cannot go back after this?')"><label class = "compute">Compute Matching</label></a>
     <h2>Student Rankings</h2>
     <table id="results" class = "display">
         <thead>
@@ -84,18 +82,6 @@
 {% endblock %}
 
 {% block style_block %}
-    input[type=submit]{
-        cursor: pointer;
-        border-radius: 4px;
-        background-color: #4CAF50; /* Green */
-        border: none;
-        color: white;
-        padding: 15px 32px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
-    }
     table{
         font-family:arial;
     }
@@ -114,17 +100,30 @@
         *zoom: 1;
         zoom: 1;
     }
-    h1,h2,h3{
+    h1,h2,h3,label{
         font-family: arial;
     }
     h1,.stage{
         display:inline;
     }
     .stage{
-        background-color: #fcba03;
-        color: white;
+        background-color: #f0d805;
+        color:#787878;
         padding: 5px;
         border-radius:5px;
         vertical-align:4px;
+    }
+    .compute {
+        padding:10px;
+        font-size:16px;
+        display: inline-block;
+        cursor:pointer;
+        color:white;
+        background-color: #4CAF50;;
+        border:1px solid #4CAF50;;
+    }
+    .compute:hover {
+        color:#4CAF50;;
+        background-color: white;
     }
 {% endblock%}

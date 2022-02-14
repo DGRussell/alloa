@@ -143,8 +143,12 @@ def upload(request):
                     projects_valid = False
                     reasons.append("Project name column missing")
 
+                if "Description" not in project_headings:
+                    projects_valid = False
+                    reasons.append("Project description column missing")
+
                 # Check if project capacities have been supplied, if not then reduce the minimum headings length and assume 0 or 1 respectively
-                projects_min_length = 3
+                projects_min_length = 4
                 if "Project Lower Capacity" not in project_headings:
                     projects_min_length -= 1
                     defaults.append("Project Lower Capacity")
@@ -180,10 +184,12 @@ def upload(request):
                     num_advisor_ranks = i      
             else:
                 # otherwise instance type can only be a projectless instance, therefore check no ranking information has been provided in studennts file
-                if len(student_headings) > min_length:
+                if len(student_headings) > students_min_length:
                     students_valid = False
                     reasons.append("Too many columns in student file")
                 instance_type="no_projects"
+                projects_valid=True
+                valid_advisor_levels=True
 
             if students_valid and projects_valid and academics_valid:
                 # Create a new instance for uploaded files
@@ -219,7 +225,7 @@ def upload(request):
                     # Create new academic object for the instance and save
                     academic = Academic(user_profile=user_profile,instance=instance,upper_cap=sup_u_cap,lower_cap=sup_l_cap)
                     academic.save()
-
+            
                 # if projects uploaded - For each project create the project model
                 if instance_type != "no_projects":
                     for i in range(len(projects)):
@@ -232,19 +238,28 @@ def upload(request):
                             pro_u_cap = 1
                         else:
                             pro_u_cap = int(projects[i]["Project Upper Capacity"])
-                        project = Project(instance=instance,name=projects[i]["Project"],upper_cap=pro_u_cap,lower_cap=pro_l_cap,description="Test add")
+                        project = Project(instance=instance,name=projects[i]["Project"],upper_cap=pro_u_cap,lower_cap=pro_l_cap,description=projects[i]["Description"])
                         project.save()
                         # If advisor preferences have been uploaded, save them
-                        if instance_type == "all_rankings" or instance_type == "no_student_rankings": 
-                            for i in range(num_advisor_ranks):
-                                choice = "Choice " + str(i+1)
+                        valid_advisor_levels = True 
+                        if instance_type == "all_rankings" or instance_type == "no_student_rankings":
+                            for j in range(num_advisor_ranks):
+                                
+                                choice = "Choice " + str(j+1)
+                                print(projects[i][choice])
                                 if projects[i][choice] != '':
-                                    user = User.objects.get(username=projects[i][choice])
-                                    user_profile = UserProfile.objects.get(user=user)
-                                    academic = Academic.objects.get(user_profile=user_profile,instance=instance)
-                                    alevel = AdvisorLevel(project=project, academic=academic, level=i+1)
-                                    alevel.save()
-                
+                                    if UserProfile.objects.filter(unique_id=projects[i][choice]).exists():
+                                        user_profile = UserProfile.objects.get(unique_id=projects[i][choice])
+                                        if Academic.objects.filter(user_profile=user_profile,instance=instance).exists():
+                                            academic = Academic.objects.get(user_profile=user_profile,instance=instance)
+                                            alevel = AdvisorLevel(project=project, academic=academic, level=j+1)
+                                            alevel.save()
+                                        else:
+                                            valid_advisor_levels = False
+                                            reasons.append("Project " + project.name + " advisor choice " + str(j) + " is not an academic assigned to this instance.")
+                                    else:
+                                        valid_advisor_levels = False
+                                        reasons.append("Project " + project.name + "'s advisor choice " + str(i) + " is not a registered academic.")
                 # For each student create a user and student object
                 for i in range(len(students)):
                     first_name = students[i]["Student Firstname"]
@@ -256,7 +271,7 @@ def upload(request):
 
                     # If not then create a new user and corresponding profile
                     else:
-                        user =  User(username=matric,first_name=first_name,last_name=last_name,email=matric+"@student.gla.ac.uk")
+                        user = User(username=matric,first_name=first_name,last_name=last_name,email=matric+"@student.gla.ac.uk")
                         user.save()
                         user.set_password("TestPass1")
                         user.save()
@@ -276,15 +291,25 @@ def upload(request):
                     student = Student(user_profile=user_profile,instance=instance,upper_cap=stu_u_cap,lower_cap=stu_l_cap)
                     student.save()
                     # If student ranks have been uploaded then save them
+                    valid_student_choices = True
                     if instance_type == "all_rankings" or instance_type == "no_academic_rankings":
                         for j in range(num_student_ranks):
                             choice = "Choice " + str(j+1)
                             if students[i][choice] != '':
-                                project = Project.objects.get(name=students[i]["Choice "+str(j+1)],instance=instance)
-                                choice = Choice.objects.get_or_create(student=student,project=project,rank=j+1)[0]
-                                choice.save()
+                                if Project.objects.filter(name=students[i]["Choice "+str(j+1)],instance=instance).exists():
+                                    project = Project.objects.get(name=students[i]["Choice "+str(j+1)],instance=instance)
+                                    choice = Choice.objects.get_or_create(student=student,project=project,rank=j+1)[0]
+                                    choice.save()
+                                else:
+                                    valid_student_choices = False
+                                    reasons.append("Student " + student.user_profile.unique_id + "'s project choice " + str(j+1) + " is not a registered project.")
                 # Redirect to individual page for new instance
-                return redirect(reverse('instance', kwargs={"instance_id": instance.id}))
+                if valid_student_choices and valid_advisor_levels:
+                    return redirect(reverse('instance', kwargs={"instance_id": instance.id}))
+                else:
+                    for reason in reasons:
+                        messages.error(request, reason)
+                        instance.delete()
             else:
                 for reason in reasons:
                     messages.error(request, reason)
@@ -380,25 +405,128 @@ def instance(request, instance_id):
     instance = Instance.objects.get(id=instance_id)
     context_dict["instance"] = instance
 
-    # If instance is awaiting student preferences
+    if instance.stage == "P":
+        if request.session["user_type"] == "AD" or request.session["user_type"] == "SA":
+            # Get all projects currently added and output them so admin can judge how many have been proposed
+            projects = Project.objects.filter(instance=instance)
+            advisor_levels = []
+            no_levels = []
+            count = 0
+            all_levels = True
+            for project in projects:
+                levels = AdvisorLevel.objects.filter(project=project)
+                advisor_levels.append(levels)
+                count += len(levels)
+                if len(levels) == 0:
+                    all_levels = False
+                    no_levels.append(project)
+            students = Student.objects.filter(instance=instance)
+            all_ranks = True
+            for student in students:
+                if not Choice.objects.filter(student=student).exists():
+                    all_ranks = False
+
+            context_dict["projects"] = projects
+            context_dict["advisor_levels"] = advisor_levels
+            context_dict["count"] = count
+            context_dict["all_levels"] = all_levels
+            context_dict["all_ranks"] = all_ranks
+            context_dict["no_levels"] = no_levels
+            return render(request, 'alloa_matching/admin_proposal.html/', context=context_dict)
+
+        if request.session["user_type"] == "AC":
+            context_dict["results"] = Project.objects.filter(instance=instance)
+            form=ProposalForm()
+            context_dict["form"] = form
+            if request.method == "POST":
+                form = ProposalForm(request.POST)
+                if form.is_valid():
+                    if Project.objects.filter(name=form.cleaned_data.get('name'),instance=instance).exists():
+                        messages.error(request,"A project already exists with this name for this instance.")
+                    elif form.cleaned_data.get('upper_cap') < 1:
+                        messages.error(request,"Upper capacity must be at least one.")
+                    elif form.cleaned_data.get('lower_cap') < 0:
+                        messages.error(request,"Lower capacity must not be a negative number.")
+                    elif form.cleaned_data.get('lower_cap') > form.cleaned_data.get('upper_cap'):
+                        messages.error(request,"Upper capacity must be equal to or larger than lower capacity.")
+                    else:
+                        project = Project(name=form.cleaned_data.get('name'),description=form.cleaned_data.get('description'),upper_cap=form.cleaned_data.get('upper_cap'),lower_cap=form.cleaned_data.get('lower_cap'),instance=instance)
+                        project.save()
+                        user_profile = UserProfile.objects.get(user=request.user)
+                        academic = Academic.objects.get(user_profile=user_profile,instance=instance)
+                        advisor_level = AdvisorLevel(project=project,academic=academic,level=1)
+                        advisor_level.save()
+                        return redirect(reverse('instance',kwargs={"instance_id":instance_id}))
+            return render(request, 'alloa_matching/academic_proposal.html/',context=context_dict)
+
+        if request.session["user_type"] == "ST":
+            messages.error(request,"This instance is not currently available to you.")
+            return redirect(reverse('home'))
+    # If instance is new
     if instance.stage == "N":
         if request.session["user_type"] == "AD" or request.session["user_type"] == "SA":
+            
+            # Get students, projects and academics assigned to this instance
             context_dict["students"] = Student.objects.filter(instance=instance)
             context_dict["academics"] = Academic.objects.filter(instance=instance)
             context_dict["projects"] = Project.objects.filter(instance=instance)
-            ranks = []
-            levels = []
+            ranks = {}
+            levels = {}
 
+            # Get all student rankings, keeping track of the maximum number of rankings provided
+            max_ranks = 0
+            all_ranks = True
             for student in context_dict["students"]:
                 rank = Choice.objects.filter(student=student)
+                if len(rank) > max_ranks:
+                    max_ranks = len(rank)
+                if len(rank) == 0:
+                    all_ranks = False
+                ranks[student.user_profile.unique_id] = []
                 for r in rank:
-                    ranks.append(r)
-            for academic in context_dict["academics"]:
-                level = AdvisorLevel.objects.filter(academic=academic)
+                    ranks[student.user_profile.unique_id].append(r.project.name)
+
+            # If any rankings are found get the max and pad any list under the maximum to this length
+            if max_ranks != 0:
+                context_dict["student_ranks"] = True
+                context_dict["max_ranks"] = max_ranks
+                for rank in ranks.values():
+                    for i in range(max_ranks-len(rank)):
+                        rank.append("No Ranking")
+            # Otherwise set boolean so template knows which table to load
+            else:
+                context_dict["student_ranks"] = False
+            
+            # Get all advisor levels keeping track of the maximum number of levels per project
+            max_levels = 0
+            all_levels = True
+            for project in context_dict["projects"]:
+                level = AdvisorLevel.objects.filter(project=project)
+                if len(level) > max_levels:
+                    max_levels = len(level)
+                if len(level) == 0:
+                    all_levels = False
+                levels[project.name] = []
                 for l in level:
-                    levels.append(l)
+                    levels[project.name].append(l)
+            
+            # If any levels are found get the maximum number and pad any list under the maximum to this length
+            if max_levels != 0:
+                context_dict["advisor_levels"] = True
+                context_dict["max_levels"] = max_levels
+                for level in levels.values():
+                    for i in range(max_levels-len(level)):
+                        level.append("No Ranking")
+            # Otherwise set boolean so template knows which table to load
+            else:
+                context_dict["advisor_levels"] = False
+
+            context_dict["range"] = list(range(1,max_ranks+1))
+            context_dict["advisor_range"] = list(range(1,max_levels+1))
             context_dict["ranks"] = ranks
             context_dict["levels"] = levels
+            context_dict["all_levels"] = all_levels
+            context_dict["all_ranks"] = all_ranks
 
             return render(request, 'alloa_matching/new_instance.html',context=context_dict)
         else:
@@ -584,6 +712,13 @@ def instance(request, instance_id):
             context_dict["unmatched"] = unmatched
 
             return render(request, 'alloa_matching/admin_results.html',context=context_dict)
+
+@login_required
+def set_stage(request,instance_id,new_stage):
+    instance = Instance.objects.get(id=instance_id)
+    instance.stage = new_stage
+    instance.save()
+    return redirect(reverse('instance', kwargs={"instance_id": instance.id}))
 
 ###########################################
 #                                         #

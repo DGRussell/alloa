@@ -29,5 +29,6 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),
     path('instance/new/', views.upload, name='upload'),
     path('instance/<int:instance_id>/', views.instance, name='instance'),
+    path('instance/<int:instance_id>/stage/<str:new_stage>/', views.set_stage, name='set_stage'),
     path('instance/<int:instance_id>/match/', views.compute_matching, name='compute_matching')
 ]

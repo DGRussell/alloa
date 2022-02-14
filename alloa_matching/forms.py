@@ -11,3 +11,13 @@ class UploadForm(forms.Form):
     class Meta:
         model=Instance
         fields = ('name','level',)
+
+class ProposalForm(forms.Form):
+    name = forms.CharField(max_length=200, help_text= "Project Name")
+    description = forms.CharField(max_length=1000, help_text="Project Description")
+    upper_cap = forms.IntegerField(help_text="Project Upper Capacity")
+    lower_cap = forms.IntegerField(help_text="Project Lower Capacity")
+
+    class Meta:
+        model=Project
+        fields=('name','description','upper_cap','lower_cap')
