@@ -26,7 +26,7 @@
                         </a>
                     </th>
                 </tr>
-                <tr class = "extra" id="showorhide{{forloop.counter}}">
+                <tr style="{% if results|length > 3 %} display:none; {% else %} display:block; {% endif %}" id="showorhide{{forloop.counter}}">
                     <td><p><b>Project: {{result.project}} - Email: {{result.student.user_profile.user.email}}</b></p>{{result.project.description}}</td>
                 </tr>
             </table>
@@ -70,13 +70,7 @@
         font-family:arial;
         font-size: 16px;
     }
-    .extra{
-        {% if results|length > 3 %}
-            display:none;      
-        {% else %}
-            display:block;      
-        {% endif %}
-    }
+
     i{
         font-size:24px;
         margin-right:10px;

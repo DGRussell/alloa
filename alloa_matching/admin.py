@@ -3,7 +3,7 @@ from alloa_matching.models import *
 # Register your models here.
 
 class InstanceAdmin(admin.ModelAdmin):
-    list_display = ('name','level','stage')
+    list_display = ('name','min_pref_len','max_pref_len','stage')
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ('user','user_type','unique_id',)
 class StudentAdmin(admin.ModelAdmin):

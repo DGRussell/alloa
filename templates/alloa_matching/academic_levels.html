@@ -3,6 +3,8 @@
 
 {% block head_block %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <script src="https://kit.fontawesome.com/2e8b22a65b.js" crossorigin="anonymous"></script>
 {% endblock %}
@@ -15,17 +17,47 @@
             {% endfor %}
         </ul>
     {% endif %}
-    <div style = "margin:20px 0;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Project Proposal</h3></div>
-    <div style = "width:49.5%; float:left;" id = "list">
-        {% if results|length == 1 %}
-            <h3>Project</h3>
-        {% elif results|length == 0 %}
+    <div style = "margin:20px 0;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Advisor Level Rankings</h3></div>
+    <h2>Your Advisor Levels</h2>
+    <table id="levels" class = "display">
+        <thead>
+            <tr>
+                <th style="width:20%;">Project Name</th>
+                <th style="width:50%;">Description</th>
+                <th style="width:15%;">Level</th>
+                <th style="width:15%;">Option</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in levels %}
+                <tr>
+                    <td style="text-align:center;">{{ l.project.name }}</td>
+                    <td>{{ l.project.description }}</td>
+                    {% if l.level == 1 %}
+                        <td style = "text-align:center;">Expert Knowledge</td>
+                    {% elif l.level == 2 %}
+                        <td style = "text-align:center;">High Knowledge</td>
+                    {% else %}
+                        <td style = "text-align:center;">Good Knowledge</td>
+                    {% endif %}
+                    <td style = "text-align:center;background-color:#ff4d4d;"><a href="{% url 'remove_level' instance.id l.id %}" style = "color:white;">Remove Advisor Level</a></td>
+                </tr>
+            {% endfor %}
+            {% for p in no_levels %}
+                <tr style="background-color:#ff4d4d;">
+                    <td>{{p.name}}</td>
+                    <td>No Advisor</td>
+                    <td>No Level</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div id = "list" style = "width:49.5%; float:left;">
+        {% if results|length > 1 %}
             <h3>Projects</h3>
-            <p>No projects have been proposed for this instance yet.</p>
         {% else %}
-            <h3>Projects</h3>
+            <h3>Project</h3>
         {% endif %}
-        
         {% for result in results %}
             <table class = "result">
                 <tr>
@@ -33,6 +65,9 @@
                         <p class = "header">{{result.name}}</p> 
                         <a href="javascript:showOrHide({{forloop.counter}})">
                             <i id="arrow{{forloop.counter}}"class={% if results|length > 3 %}'fas fa-angle-right'{% else %}'fas fa-angle-down'{% endif %}></i>
+                        </a>
+                        <a href="javascript:setValue('{{result.name}}')">
+                            <i style = "margin-left:10px;" class="fas fa-plus-circle"></i>
                         </a>
                     </th>
                 </tr>
@@ -43,41 +78,44 @@
         {% endfor %}
     </div>
     <div id = "form" style = "width:48%;float:right;left:50.5%;">
-        <h3>Propose a New Project</h3>
+        <h3>Give your Ability to Advise on a Project</h3>
         <form action="{% url 'instance' instance.id %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <label for="id_name">Project Name:</label>
-            <input type="text" name="name" maxlength="200" required="" id="id_name">
+            <input type="text" name="name" maxlength="200" required="" id="id_name" readonly>
             
-            <label for="id_name">Project Description:</label>
-            <input type="text" name="description" maxlength="200" required="" id="id_description">
-            <div class = "capacities">
-                <label for="id_level">Upper Capacity:</label>
-                <input type="number" name="upper_cap" maxlength="200" required="" id="id_upper">
-            </div>
-            <div class = "capacities" style = "margin-left:2%;">
-                <label for="id_level">Lower Capacity:</label>
-                <input type="number" name="lower_cap" maxlength="200" required="" id="id_lower">
-            </div>
+            <label for="id_level">Knowledge of Project:</label>
+            {{ form.level }}
             <input type="submit" name = "proposal" value="Submit">
         </form>
     </div>
 {% endblock %}
 
 {% block style_block %}
-    h1,h3,label,p{
+    h1,h2,h3,label,table{
         font-family: arial;
     }
     h1,.stage{
         display:inline;
     }
     .stage{
-        background-color: #14baa1;
+        background-color: #e89015;
         color: white;
         padding: 5px;
         border-radius:5px;
         vertical-align:4px;
     }
+    .dataTables_wrapper {
+        font-family: arial;
+        font-size: 15px;
+        position: relative;
+        clear: both;
+        *zoom: 1;
+        zoom: 1;
+    }
+    .dt-body-nowrap {
+        white-space: nowrap;
+     }
     .header{
         display:inline;
         vertical-align:-3px;
@@ -100,7 +138,9 @@
         font-family:arial;
         font-size: 16px;
     }
-
+    .extra{
+        display:block; 
+    }
     i{
         font-size:24px;
         margin-right:10px;
@@ -123,7 +163,7 @@
         font-family:arial;
         font-size:16px;
     }
-    input[type=text], input[type=number] {
+    input[type=text], input[type=number],#id_level {
         width: 100%;
         padding: 12px 20px;
         margin: 8px 0;
@@ -135,10 +175,21 @@
         width:49%;
         float:left;
     }
+    
 {% endblock%}
 
 {% block script_block %}
 <script type="text/javascript">
+    $(document).ready(function() { 
+        // DataTable
+        $('#levels').DataTable({
+            "ordering": false,
+        });
+    });
+    function setValue(name){
+        console.log(name)
+        document.getElementById("id_name").value = name;
+    }
     function showOrHide(i) 
     {
         var div = document.getElementById("showorhide"+i);

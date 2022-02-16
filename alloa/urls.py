@@ -30,5 +30,6 @@ urlpatterns = [
     path('instance/new/', views.upload, name='upload'),
     path('instance/<int:instance_id>/', views.instance, name='instance'),
     path('instance/<int:instance_id>/stage/<str:new_stage>/', views.set_stage, name='set_stage'),
+    path('instance/<int:instance_id>/remove_level/<int:level_id>/', views.remove_level, name='remove_level'),
     path('instance/<int:instance_id>/match/', views.compute_matching, name='compute_matching')
 ]

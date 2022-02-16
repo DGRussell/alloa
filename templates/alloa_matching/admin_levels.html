@@ -1,0 +1,127 @@
+{% extends 'alloa_matching/base.html' %}
+{% load staticfiles %}
+
+{% block head_block %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block body_block %}
+
+<div style = "margin-top:20px;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Advisor Level Rankings</h3></div>
+{% if projects|length != 0 %} 
+<h2>Next Stages</h2>
+    {% if all_levels %}  
+        <a href = "{% url 'set_stage' instance.id 'S' %}" onclick="return confirm('Are you sure you want to move to the student ranking stage, you cannot go back after this?')"><label class = "student">Student Rankings</label></a>
+    {% endif %}
+    {% if all_ranks and all_levels %}
+            <a href = "{% url 'set_stage' instance.id 'C' %}" onclick="return confirm('Are you sure you want to move to the closed stage, you cannot go back after this?')"><label class = "closed">Closed</label></a>
+    {% endif %}
+{% endif %}
+
+<h2>Advisor Levels - {{count}}</h2>
+<table id="levels" class = "display">
+    <thead>
+        <tr>
+            <th>Project Name</th>
+            <th>Advisor</th>
+            <th>Level</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in advisor_levels %}
+            {% for l in p %}
+                <tr>
+                    <td>{{ l.project.name }}</td>
+                    <td>{{ l.academic.user_profile.unique_id }}</td>
+                    {% if l.level == 1 %}
+                        <td>Expert Knowledge</td>
+                    {% elif l.level == 2 %}
+                        <td>High Knowledge</td>
+                    {% else %}
+                        <td>Good Knowledge</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        {% endfor %}
+        {% for p in no_levels %}
+            <tr style="background-color:#ff4d4d;">
+                <td>{{p.name}}</td>
+                <td>No Advisor</td>
+                <td>No Level</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block style_block %}
+h1,h2,h3,p,label{
+    font-family: arial;
+}
+h1,.stage{
+    display:inline;
+}
+.stage{
+    background-color: #e89015;
+    color: white;
+    padding: 5px;
+    border-radius:5px;
+    vertical-align:4px;
+}
+table{
+    font-family:arial;
+}
+.dataTables_wrapper {
+    font-family: arial;
+    font-size: 15px;
+    position: relative;
+    clear: both;
+    *zoom: 1;
+    zoom: 1;
+}
+.advisor, .student,.closed {
+    padding:10px;
+    font-size:16px;
+    display: inline-block;
+    cursor:pointer;
+}
+.advisor{
+    color:white;
+    background-color: #e89015;
+    border:1px solid #e89015;
+}
+.advisor:hover {
+    color:#e89015;
+    background-color: white;
+}
+.student{
+    color:white;
+    background-color: #c42525;
+    border:1px solid #c42525;
+}
+.student:hover {
+    color:#c42525;
+    background-color: white;
+}
+.closed{
+    color:white;
+    background-color: #f0d805;
+    border:1px solid #f0d805;
+}
+.closed:hover {
+    color:#f0d805;
+    background-color: white;
+}
+{% endblock %}
+
+{% block script_block %}
+    <script>
+        $(document).ready(function() { 
+            // DataTable
+            $('#projects').DataTable();
+            $('#levels').DataTable();
+        });
+    </script>
+{% endblock %}

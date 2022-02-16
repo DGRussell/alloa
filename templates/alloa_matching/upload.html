@@ -16,25 +16,32 @@
     <a href="{% static 'files/academic_template.csv'%}" download><label class = "download">Academics CSV Template</label></a>
     <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <h3>Instance Details</h3>
-        <label for="id_name">Course Name:</label>
-        <input type="text" name="name" maxlength="200" required="" id="id_name">
-
-        <label for="id_level">Course Level:</label>
-        <input type="number" name="level" maxlength="200" required="" id="id_level"><p></p>
-
+        <div>
+            <h3>Instance Details</h3>
+            <label for="id_name">Instance Name:</label>
+            <input type="text" name="name" maxlength="200" required="" id="id_name">
+            <div class = "pref_len">
+                <label for="id_min_pref_len">Minimum Length of Student Preference List:</label>
+                <input type="number" name="min_pref_len" maxlength="200" required="" id="id_min_pref_len">
+            </div><div class = "pref_len" style = "margin-left:1%;">
+                <label for="id_max_pref_len">Maximum Length of Student Preference List:</label>
+                <input type="number" name="max_pref_len" maxlength="200" required="" id="id_max_pref_len">
+            </div>
+        </div>
+        <div>
         <h3>Instance Files</h3>
-        <p>Valid file uploads include: Only student and academic details provided, student, academic and project details provided, all details and advisor levels provided, all details and student rankings provided, all details and both advisor levels and student rankings provided.</p> 
-        <input type="file" name="students" maxlength="200" required="" id="id_students" class = "fileinput">
-        <label for="id_students">Students CSV File</label><span class="student-file-name"></span><p></p>
+            <p style = "width:50%;">Valid file uploads include: Only student and academic details provided, student, academic and project details provided, all details and advisor levels provided, all details and student rankings provided, all details and both advisor levels and student rankings provided.</p> 
+            <input type="file" name="students" maxlength="200" required="" id="id_students" class = "fileinput">
+            <label for="id_students">Students CSV File</label><span class="student-file-name"></span><p></p>
 
-        <input type="file" name="projects" maxlength="200" id="id_projects" class = "fileinput">
-        <label for="id_projects">Projects CSV File</label><span class="project-file-name"></span><p></p>
+            <input type="file" name="projects" maxlength="200" id="id_projects" class = "fileinput">
+            <label for="id_projects">Projects CSV File</label><span class="project-file-name"></span><p></p>
 
-        <input type="file" name="academics" maxlength="200" required="" id="id_academics" class = "fileinput">
-        <label for="id_academics">Academics CSV File</label><span class="academic-file-name"></span><p></p>
+            <input type="file" name="academics" maxlength="200" required="" id="id_academics" class = "fileinput">
+            <label for="id_academics">Academics CSV File</label><span class="academic-file-name"></span><p></p>
 
-        <input type="submit" name = "full_upload" value="Submit">
+            <input type="submit" name = "full_upload" value="Submit">
+        </div>
     </form>
 {% endblock %}
 
@@ -50,14 +57,20 @@
         margin-right: 20px;
     }
     input[type=text], input[type=number], input[type=file] {
-        width: 100%;
+        width: 50%;
         padding: 12px 20px;
         margin: 8px 0;
-        display: inline-block;
+        display: block;
         border: 1px solid #ccc;
         box-sizing: border-box;
     }
-    
+    input[type=number]{
+        width:100%;
+    }
+    .pref_len{
+        width:24.5%;
+        display:inline-block;
+    }
     .fileinput{
         width: 0.1px;
         height: 0.1px;
@@ -99,7 +112,7 @@
         margin: 8px 0;
         border: none;
         cursor: pointer;
-        width: 100%;
+        width: 50%;
         font-family:arial;
         font-size:16px;
     }

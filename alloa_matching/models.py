@@ -5,11 +5,12 @@ from django.contrib.auth.models import User
 
 class Instance(models.Model):
     name = models.CharField(max_length=200, unique=True, blank=False)
-    level = models.IntegerField(default=0, blank=False)
+    min_pref_len = models.PositiveIntegerField(default=0, blank=False)
+    max_pref_len = models.PositiveIntegerField(default=0, blank=False)
     stage_choices = (
         ('N','New'),
         ('P','Project Proposal'),
-        ('L','Lecturer Ranking Levels'),
+        ('L','Advisor Ranking Levels'),
         ('S','Student Preference Collection'),
         ('C','Closed'),
         ('R','Results Available')
@@ -30,8 +31,8 @@ class UserProfile(models.Model):
 class Student(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     instance = models.ForeignKey(Instance, on_delete=models.CASCADE)
-    upper_cap = models.IntegerField(default=1, blank=False)
-    lower_cap = models.IntegerField(default=0, blank=False)
+    upper_cap = models.PositiveIntegerField(default=1, blank=False)
+    lower_cap = models.PositiveIntegerField(default=0, blank=False)
 
     def __str__(self):
         return self.user_profile.user.get_full_name()
@@ -53,8 +54,8 @@ class Manager(models.Model):
 class Academic(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     instance = models.ForeignKey(Instance, on_delete=models.CASCADE)
-    upper_cap = models.IntegerField(default=1, blank=False)
-    lower_cap = models.IntegerField(default=0, blank=False)
+    upper_cap = models.PositiveIntegerField(default=1, blank=False)
+    lower_cap = models.PositiveIntegerField(default=0, blank=False)
 
     def __str__(self):
         return self.user_profile.user.get_full_name()
@@ -62,8 +63,8 @@ class Academic(models.Model):
 class Project(models.Model):
     name = models.CharField(max_length=200, blank=False)
     description = models.CharField(max_length=1000, blank=False)
-    upper_cap = models.IntegerField(default=1, blank=False)
-    lower_cap = models.IntegerField(default=0, blank=False)
+    upper_cap = models.PositiveIntegerField(default=1, blank=False)
+    lower_cap = models.PositiveIntegerField(default=0, blank=False)
     instance = models.ForeignKey(Instance, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -72,7 +73,7 @@ class Project(models.Model):
 class Choice(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    rank = models.IntegerField(default=1, blank=False)
+    rank = models.PositiveIntegerField(default=1, blank=False)
 
     def __str__(self):
         return str(self.student) + " ranks " + str(self.project) + " their choice number " + str(self.rank)
@@ -80,7 +81,7 @@ class Choice(models.Model):
 class AdvisorLevel(models.Model):
     academic = models.ForeignKey(Academic, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    level = models.IntegerField(choices=((1, "Expert Knowledge"), (2, "High Knowledge"), (3, "Good Knowledge")), default=1, blank=False)
+    level = models.PositiveIntegerField(choices=((1, "Expert Knowledge"), (2, "High Knowledge"), (3, "Good Knowledge")), default=1, blank=False)
     
     def __str__(self):
         return str(self.academic) + " can mentor " + str(self.project) + " at level " + str(self.level)

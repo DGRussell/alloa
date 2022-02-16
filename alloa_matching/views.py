@@ -193,7 +193,7 @@ def upload(request):
 
             if students_valid and projects_valid and academics_valid:
                 # Create a new instance for uploaded files
-                instance = Instance.objects.get_or_create(name=form.cleaned_data.get("name"),level=form.cleaned_data.get("level"),stage="N")[0]
+                instance = Instance.objects.get_or_create(name=form.cleaned_data.get("name"),min_pref_len=form.cleaned_data.get("min_pref_len"),max_pref_len=form.cleaned_data.get("max_pref_len"),stage="N")[0]
                 instance.save()
 
                 # For each academic 
@@ -244,7 +244,6 @@ def upload(request):
                         valid_advisor_levels = True 
                         if instance_type == "all_rankings" or instance_type == "no_student_rankings":
                             for j in range(num_advisor_ranks):
-                                
                                 choice = "Choice " + str(j+1)
                                 print(projects[i][choice])
                                 if projects[i][choice] != '':
@@ -401,67 +400,11 @@ def compute_matching(request, instance_id):
 @login_required
 def instance(request, instance_id):
 
+    # Get the instance
     context_dict = {}
     instance = Instance.objects.get(id=instance_id)
     context_dict["instance"] = instance
 
-    if instance.stage == "P":
-        if request.session["user_type"] == "AD" or request.session["user_type"] == "SA":
-            # Get all projects currently added and output them so admin can judge how many have been proposed
-            projects = Project.objects.filter(instance=instance)
-            advisor_levels = []
-            no_levels = []
-            count = 0
-            all_levels = True
-            for project in projects:
-                levels = AdvisorLevel.objects.filter(project=project)
-                advisor_levels.append(levels)
-                count += len(levels)
-                if len(levels) == 0:
-                    all_levels = False
-                    no_levels.append(project)
-            students = Student.objects.filter(instance=instance)
-            all_ranks = True
-            for student in students:
-                if not Choice.objects.filter(student=student).exists():
-                    all_ranks = False
-
-            context_dict["projects"] = projects
-            context_dict["advisor_levels"] = advisor_levels
-            context_dict["count"] = count
-            context_dict["all_levels"] = all_levels
-            context_dict["all_ranks"] = all_ranks
-            context_dict["no_levels"] = no_levels
-            return render(request, 'alloa_matching/admin_proposal.html/', context=context_dict)
-
-        if request.session["user_type"] == "AC":
-            context_dict["results"] = Project.objects.filter(instance=instance)
-            form=ProposalForm()
-            context_dict["form"] = form
-            if request.method == "POST":
-                form = ProposalForm(request.POST)
-                if form.is_valid():
-                    if Project.objects.filter(name=form.cleaned_data.get('name'),instance=instance).exists():
-                        messages.error(request,"A project already exists with this name for this instance.")
-                    elif form.cleaned_data.get('upper_cap') < 1:
-                        messages.error(request,"Upper capacity must be at least one.")
-                    elif form.cleaned_data.get('lower_cap') < 0:
-                        messages.error(request,"Lower capacity must not be a negative number.")
-                    elif form.cleaned_data.get('lower_cap') > form.cleaned_data.get('upper_cap'):
-                        messages.error(request,"Upper capacity must be equal to or larger than lower capacity.")
-                    else:
-                        project = Project(name=form.cleaned_data.get('name'),description=form.cleaned_data.get('description'),upper_cap=form.cleaned_data.get('upper_cap'),lower_cap=form.cleaned_data.get('lower_cap'),instance=instance)
-                        project.save()
-                        user_profile = UserProfile.objects.get(user=request.user)
-                        academic = Academic.objects.get(user_profile=user_profile,instance=instance)
-                        advisor_level = AdvisorLevel(project=project,academic=academic,level=1)
-                        advisor_level.save()
-                        return redirect(reverse('instance',kwargs={"instance_id":instance_id}))
-            return render(request, 'alloa_matching/academic_proposal.html/',context=context_dict)
-
-        if request.session["user_type"] == "ST":
-            messages.error(request,"This instance is not currently available to you.")
-            return redirect(reverse('home'))
     # If instance is new
     if instance.stage == "N":
         if request.session["user_type"] == "AD" or request.session["user_type"] == "SA":
@@ -473,14 +416,14 @@ def instance(request, instance_id):
             ranks = {}
             levels = {}
 
-            # Get all student rankings, keeping track of the maximum number of rankings provided
+            # Get all student rankings, keeping track of the maximum number of rankings provided and whether students have enough rankings
             max_ranks = 0
             all_ranks = True
             for student in context_dict["students"]:
                 rank = Choice.objects.filter(student=student)
                 if len(rank) > max_ranks:
                     max_ranks = len(rank)
-                if len(rank) == 0:
+                if len(rank) < instance.min_pref_len:
                     all_ranks = False
                 ranks[student.user_profile.unique_id] = []
                 for r in rank:
@@ -529,9 +472,162 @@ def instance(request, instance_id):
             context_dict["all_ranks"] = all_ranks
 
             return render(request, 'alloa_matching/new_instance.html',context=context_dict)
+        # If user is a student or academic redirect them to home page
         else:
             messages.error(request,"This instance is not currently available to you.")
             return redirect(reverse('home'))
+
+    # If instance is in project proposal stage
+    if instance.stage == "P":
+        # If user is an admin
+        if request.session["user_type"] == "AD" or request.session["user_type"] == "SA":
+            # Get all projects currently added and output them so admin can judge how many have been proposed
+            projects = Project.objects.filter(instance=instance)
+            advisor_levels = []
+            no_levels = []
+            count = 0
+            all_levels = True
+            # For each project get their advisor levels
+            for project in projects:
+                levels = AdvisorLevel.objects.filter(project=project)
+                # Add all levels to the level list
+                advisor_levels.append(levels)
+                count += len(levels)
+                # If a project doesn't have any advisor levels set, store in unranked list and set boolean to false so admin cannot move stage
+                if len(levels) == 0:
+                    all_levels = False
+                    no_levels.append(project)
+
+            # Get all student rankings, check whether students have enough rankings to move straight to closed stage
+            students = Student.objects.filter(instance=instance)
+            all_ranks = True
+            for student in students:
+                if len(Choice.objects.filter(student=student))>=instance.min_pref_len and len(Choice.objects.filter(student=student))<=instance.max_pref_len:
+                    all_ranks = False
+
+            context_dict["projects"] = projects
+            context_dict["advisor_levels"] = advisor_levels
+            context_dict["count"] = count
+            context_dict["all_levels"] = all_levels
+            context_dict["all_ranks"] = all_ranks
+            context_dict["no_levels"] = no_levels
+            return render(request, 'alloa_matching/admin_proposal.html/', context=context_dict)
+
+        # If user is an academic
+        if request.session["user_type"] == "AC":
+
+            # Get all projects and load project proposal form
+            context_dict["results"] = Project.objects.filter(instance=instance)
+            form=ProposalForm()
+            context_dict["form"] = form
+            # If form has been submitted
+            if request.method == "POST":
+                # Get form and check validity
+                form = ProposalForm(request.POST)
+                if form.is_valid():
+                    # Send error message if project name already used in this instance or if theres a problem with project capacities
+                    if Project.objects.filter(name=form.cleaned_data.get('name'),instance=instance).exists():
+                        messages.error(request,"A project already exists with this name for this instance.")
+                    elif form.cleaned_data.get('upper_cap') < 1:
+                        messages.error(request,"Upper capacity must be at least one.")
+                    elif form.cleaned_data.get('lower_cap') < 0:
+                        messages.error(request,"Lower capacity must not be a negative number.")
+                    elif form.cleaned_data.get('lower_cap') > form.cleaned_data.get('upper_cap'):
+                        messages.error(request,"Upper capacity must be equal to or larger than lower capacity.")
+                    # If valid
+                    else:
+                        # Save project and set proposer as expert advisor on this project
+                        project = Project(name=form.cleaned_data.get('name'),description=form.cleaned_data.get('description'),upper_cap=form.cleaned_data.get('upper_cap'),lower_cap=form.cleaned_data.get('lower_cap'),instance=instance)
+                        project.save()
+                        user_profile = UserProfile.objects.get(user=request.user)
+                        academic = Academic.objects.get(user_profile=user_profile,instance=instance)
+                        advisor_level = AdvisorLevel(project=project,academic=academic,level=1)
+                        advisor_level.save()
+                        # Redirect to instance page to load a fresh form
+                        return redirect(reverse('instance',kwargs={"instance_id":instance_id}))
+                        
+            return render(request, 'alloa_matching/academic_proposal.html/',context=context_dict)
+
+        # If user is a student redirect to the home page
+        if request.session["user_type"] == "ST":
+            messages.error(request,"This instance is not currently available to you.")
+            return redirect(reverse('home'))
+    
+    # If instance is in Advisor level ranking stage
+    if instance.stage == "L":
+        # If user is an admin
+        if request.session["user_type"] == "AD" or request.session["user_type"] == "SA":
+            # Get all projects currently added and output them so admin can judge how many have been proposed
+            projects = Project.objects.filter(instance=instance)
+            advisor_levels = []
+            no_levels = []
+            count = 0
+            all_levels = True
+            # For each project get their advisor levels
+            for project in projects:
+                levels = AdvisorLevel.objects.filter(project=project)
+                # Add all levels to the level list
+                advisor_levels.append(levels)
+                count += len(levels)
+                # If a project doesn't have any advisor levels set, store in unranked list and set boolean to false so admin cannot move stage
+                if len(levels) == 0:
+                    all_levels = False
+                    no_levels.append(project)
+            
+            # Get all student rankings, check whether students have enough rankings to move straight to closed stage
+            students = Student.objects.filter(instance=instance)
+            all_ranks = True
+            for student in students:
+                if len(Choice.objects.filter(student=student))<=instance.min_pref_len and len(Choice.objects.filter(student=student))>=instance.max_pref_len:
+                    all_ranks = False
+
+            context_dict["projects"] = projects
+            context_dict["advisor_levels"] = advisor_levels
+            context_dict["count"] = count
+            context_dict["all_levels"] = all_levels
+            context_dict["all_ranks"] = all_ranks
+            context_dict["no_levels"] = no_levels
+            return render(request, 'alloa_matching/admin_levels.html/', context=context_dict)
+
+        # If user is an academic
+        if request.session["user_type"] == "AC":
+            # Get all projects and get instance profile of current user
+            context_dict["results"] = Project.objects.filter(instance=instance)
+            user_profile = UserProfile.objects.get(user=request.user)
+            academic = Academic.objects.get(user_profile=user_profile,instance=instance)
+            context_dict["levels"] = AdvisorLevel.objects.filter(academic=academic)
+            # Load advisor level form
+            form=AdvisorLevelForm()
+            context_dict["form"] = form
+            # If form has been submitted
+            if request.method == "POST":
+                # Load form results and check validity
+                form = AdvisorLevelForm(request.POST)
+                if form.is_valid():
+                    # If ranked project exists
+                    if Project.objects.filter(name=form.cleaned_data.get('name'),instance=instance).exists():
+                        # Get project and either set new advisor level or overwrite existing level
+                        project = Project.objects.get(name=form.cleaned_data.get('name'),instance=instance)
+                        if AdvisorLevel.objects.filter(project=project,academic=academic).exists():
+                            alevel = AdvisorLevel.objects.get(project=project,academic=academic)
+                            alevel.level = form.cleaned_data.get('level')
+                            alevel.save()
+                        else:
+                            alevel = AdvisorLevel(project=project,academic=academic,level=form.cleaned_data.get('level'))
+                            alevel.save()
+                            return redirect(reverse('instance',kwargs={"instance_id":instance.id}))
+                    # If project doesnt exist throw error (Should be impossible with read only project field)
+                    else:
+                        messages.error(request,"Invalid project name provided")
+                        
+            return render(request, 'alloa_matching/academic_levels.html/',context=context_dict)
+
+        # If user is a student redirect to home page
+        if request.session["user_type"] == "ST":
+            messages.error(request,"This instance is not currently available to you.")
+            return redirect(reverse('home'))
+        
+    # If instance is in student ranking stage
     if instance.stage == "S":
         # TBC
         if request.session["user_type"] == "ST":
@@ -628,7 +724,7 @@ def instance(request, instance_id):
                     results.append([])
                     unranked.append(student)
 
-            # 
+            # Load all projects and their advisor levels
             projects = Project.objects.filter(instance=instance_id)
             levels = []
 
@@ -640,7 +736,7 @@ def instance(request, instance_id):
                     levels.append([])
             # Load admin closed page
             context_dict["projects"] = levels
-            context_dict["range"] = [*range(1,8,1)]
+            context_dict["range"] = [*range(1,instance.max_pref_len,1)]
             context_dict["results"] = zip(students,results)
             context_dict["unranked"] = unranked
             return render(request, 'alloa_matching/admin_closed.html',context=context_dict)
@@ -719,6 +815,11 @@ def set_stage(request,instance_id,new_stage):
     instance.stage = new_stage
     instance.save()
     return redirect(reverse('instance', kwargs={"instance_id": instance.id}))
+
+@login_required
+def remove_level(request,instance_id,level_id):
+    AdvisorLevel.objects.get(id=level_id).delete()
+    return redirect(reverse('instance',kwargs={"instance_id":instance_id}))
 
 ###########################################
 #                                         #
