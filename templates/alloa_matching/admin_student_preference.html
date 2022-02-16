@@ -1,6 +1,116 @@
 {% extends 'alloa_matching/base.html' %}
 {% load staticfiles %}
 
-{% block body_block %}
-     <p>Admin Student Preference</p>
+{% block head_block %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
 {% endblock %}
+
+{% block body_block %}
+     <div style = "margin-top:20px;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Student Rankings</h3></div>
+     {% if all_ranks %}
+          <h2>Next Stages</h2>
+          <a href = "{% url 'set_stage' instance.id 'C' %}" onclick="return confirm('Are you sure you want to move to the closed stage, you cannot go back after this?')"><label class = "closed">Closed</label></a>
+     {% endif %}    
+     <h2>Student Rankings</h2>
+     <table id="results" class = "display">
+        <thead>
+            <tr>
+                <th>Student</th>
+                {% for r in range %}
+                    <th>Rank {{r}}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for student,student_result in results %}
+            <tr>
+                <td>{{student.user_profile.user.email}}</td>
+                {% for result in student_result %} 
+                        <td>{{result}}</td>
+                {% endfor %}
+
+            {% endfor %}
+            {% for result in unmatched %}
+                <tr style="background-color:#ff4d4d;" class = "unmatched">
+                    {% for r in range %}
+                         <td>Unmatched</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+
+{% block script_block %}
+    <script>
+        $(document).ready(function() { 
+            // DataTable
+            $('#results').DataTable();
+        });
+    </script>
+{% endblock %}
+
+{% block style_block %}
+     .closed {
+          padding:10px;
+          font-size:16px;
+          display: inline-block;
+          cursor:pointer;
+     }
+     .closed{
+          color:white;
+          background-color: #f0d805;
+          border:1px solid #f0d805;
+     }
+     .closed:hover {
+          color:#f0d805;
+          background-color: white;
+     }
+    table{
+        font-family:arial;
+    }
+    .unmatched{
+        color:white;
+    }
+    .container{
+        padding: 0 1%;
+        margin-bottom:20px;
+    }
+    .dataTables_wrapper {
+        font-family: arial;
+        font-size: 15px;
+        position: relative;
+        clear: both;
+        *zoom: 1;
+        zoom: 1;
+    }
+    h1,h2,h3,label{
+        font-family: arial;
+    }
+    h1,.stage{
+        display:inline;
+    }
+    .stage{
+        background-color: #c42525;
+        color:white;
+        padding: 5px;
+        border-radius:5px;
+        vertical-align:4px;
+    }
+    .compute {
+        padding:10px;
+        font-size:16px;
+        display: inline-block;
+        cursor:pointer;
+        color:white;
+        background-color: #4CAF50;;
+        border:1px solid #4CAF50;;
+    }
+    .compute:hover {
+        color:#4CAF50;;
+        background-color: white;
+    }
+{% endblock%}

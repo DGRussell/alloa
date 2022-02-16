@@ -77,7 +77,7 @@
             </table>
         {% endfor %}
     </div>
-    <div id = "form" style = "width:48%;float:right;left:50.5%;">
+    <div id = "form" style = "width:48%;float:right;left:50.5%; position:absolute;">
         <h3>Give your Ability to Advise on a Project</h3>
         <form action="{% url 'instance' instance.id %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}

@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.template import Context
 from django.template.loader import render_to_string, get_template
 from django.conf import settings
+from django.forms import formset_factory
 from alloa_matching.models import *
 from alloa_matching.forms import *
 from typing import List, Optional
@@ -629,9 +630,53 @@ def instance(request, instance_id):
         
     # If instance is in student ranking stage
     if instance.stage == "S":
-        # TBC
-        if request.session["user_type"] == "ST":
-            print("Student")
+        # If user is a student
+        if request.session["user_type"] == "ST": 
+            # Load their profile and current ranks to be added to the form
+            user_profile = UserProfile.objects.get(user=request.user)
+            student = Student.objects.get(user_profile=user_profile, instance=instance)
+            ranks = Choice.objects.filter(student=student)
+            initial = []
+            context_dict["initial_length"] = len(ranks)
+            # Either add the project name or a null value to the form
+            for r in ranks:
+                initial.append({"project":r.project.name})
+            for i in range(instance.max_pref_len-len(ranks)):
+                initial.append({"project":''})
+            # Load the formset with extra values to add up to the max preferennce list length
+            RankFormSet = formset_factory(RankForm,extra=(instance.max_pref_len-len(initial)),max_num=instance.max_pref_len)
+            formset = RankFormSet(initial=initial)
+
+            # If formset has been submitted
+            if request.method == "POST":
+                preferences = []
+                # Get each submitted preference
+                for i in range(instance.max_pref_len):
+                    name = "project_name_" + str(i)
+                    data = request.POST.get(name)
+                    if data != '':
+                        preferences.append(data)
+                # Check all preferences are unique
+                if len(set(preferences)) == len(preferences):
+                    # Wipe all existing preferences and create the new ones
+                    Choice.objects.filter(student=student).delete()
+                    for i in range(len(preferences)):
+                        project = Project.objects.get(name=preferences[i],instance=instance)
+                        choice = Choice(project=project,student=student,rank=i+1)
+                        choice.save()
+                    # If list is too short, update but add warning for student
+                    if len(preferences) < instance.min_pref_len:
+                        messages.success(request,"Ranking List updated successfully, however your ranking list is now below the minimum length, please rank another " + str(instance.min_pref_len-len(preferences)) + " project(s).")
+                    else:
+                        messages.success(request,"Ranking List updated successfully.")
+                    # Redirect to rankings page
+                    return redirect(reverse('instance',kwargs={"instance_id":instance.id}))
+                # Throw error if projects are not unique
+                else:
+                    messages.error(request,"All projects ranked must be unique.")
+            # Get all projects and get instance profile of current user
+            context_dict["results"] = Project.objects.filter(instance=instance)
+            context_dict["formset"] = formset
             return render(request, 'alloa_matching/student_preference.html',context=context_dict)
         # If user is academic
         if request.session["user_type"] == "AC":
@@ -654,9 +699,37 @@ def instance(request, instance_id):
             context_dict["unranked"] = unranked
 
             return render(request, 'alloa_matching/academic_student_preference.html',context=context_dict)
-        # TBC
+        # If user is an admin
         if request.session["user_type"] == "AD" or request.session["user_type"] == "SA":
-            print("Admin")
+            # Get all students assigned to the instance
+            students = Student.objects.filter(instance=instance_id)
+            results = []
+            unranked = []
+            all_ranks = True
+            # For each student
+            for student in students:
+                # If student has given ranks, get all their ranked projects
+                if Choice.objects.filter(student=student).exists():
+                    result = Choice.objects.filter(student=student) 
+                    edited_result = []
+                    if len(result) < instance.max_pref_len:
+                        if len(result) < instance.min_pref_len:
+                            all_ranks = False
+                        for i in range(len(result)):
+                            edited_result.append(result[i].project.name)
+                        for i in range(instance.max_pref_len - len(result)):
+                            edited_result.append("Unranked")
+                    results.append(edited_result)
+
+                # Otherwise add student to unranked list
+                else:
+                    all_ranks = False
+                    results.append([])
+                    unranked.append(student)
+            context_dict["all_ranks"] = all_ranks
+            context_dict["range"] = [*range(1,instance.max_pref_len+1,1)]
+            context_dict["results"] = zip(students,results)
+            context_dict["unranked"] = unranked
             return render(request, 'alloa_matching/admin_student_preference.html',context=context_dict)
 
     # If instance is closed

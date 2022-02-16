@@ -30,3 +30,10 @@ class AdvisorLevelForm(forms.Form):
     class Meta:
         model=AdvisorLevel
         fields=('level')
+
+class RankForm(forms.Form):
+    project = forms.CharField(max_length=200,help_text="Project Name")
+
+    class Meta:
+        model=Choice
+        fields=('project')

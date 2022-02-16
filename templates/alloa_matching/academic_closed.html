@@ -26,7 +26,13 @@
                 <tr>
                     <td>{{ choice.project }}</td>
                     <td>{{ choice.project.description }}</td>
-                    <td>{{ choice.level }}</td>
+                    {% if choice.level == 1 %}
+                        <td>Expert Knowledge</td>
+                    {% elif choice.level == 2 %}
+                        <td>High Knowledge</td>
+                    {% else %}
+                        <td>Good Knowledge</td>
+                    {% endif %}
                 </tr>
             {% endfor %}
         </table>
