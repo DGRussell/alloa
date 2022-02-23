@@ -1,7 +1,18 @@
 {% extends 'alloa_matching/base.html' %}
 {% load staticfiles %}
 
+{% block head_block %}
+<link rel="stylesheet" type="text/css" href='{% static "/css/messages.css" %}'>
+<link rel="icon" href="{% static 'images/matching.png' %}">
+    <title>Alloa - {{instance.name}}</title>
+{% endblock %}
+
 {% block body_block %}
+    {% if messages %}
+            {% for message in messages %}
+                    <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+            {% endfor %}
+    {% endif %}
     <div style = "margin-top:20px;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Closed</h3></div>
     {% if unranked %}
         <p>No ranks have been submitted for you and the project advisor level rankings have now closed.</p>
@@ -47,7 +58,7 @@
         display:inline;
     }
     .stage{
-        background-color: #f0d805;
+        background-color: #f09618;
         color: white;
         padding: 5px;
         border-radius:5px;

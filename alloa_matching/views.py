@@ -46,7 +46,26 @@ def user_logout(request):
 @login_required
 def home(request):
     context_dict = {} 
-    context_dict["instances"] = Instance.objects.all()
+    user = request.user
+    context_dict["user"] = user
+    context_dict["user_type"] = request.session["user_type"]
+    if request.session["user_type"] == "ST":
+        user_profile = UserProfile.objects.get(user=user) 
+        instances = []
+        students = Student.objects.filter(user_profile=user_profile)
+        for s in students:
+            if s.instance.stage != "N" and s.instance.stage != "L" and s.instance.stage != "P":
+                instances.append(s.instance)
+    if request.session["user_type"] == "AC":
+        user_profile = UserProfile.objects.get(user=user)
+        instances = []
+        academics = Academic.objects.filter(user_profile=user_profile)
+        for a in academics:
+            if a.instance.stage != "N":
+                instances.append(a.instance)
+    if request.session["user_type"] == "AD" or request.session["user_type"] == "SA":
+        instances = Instance.objects.all()
+    context_dict["instances"] = instances
     context_dict["user"] = request.user
     context_dict["user_type"] = request.session["user_type"]
     return render(request, 'alloa_matching/home.html',context=context_dict)
@@ -704,12 +723,14 @@ def instance(request, instance_id):
             # Get all students assigned to the instance
             students = Student.objects.filter(instance=instance_id)
             results = []
+            matched = []
             unranked = []
             all_ranks = True
             # For each student
             for student in students:
                 # If student has given ranks, get all their ranked projects
                 if Choice.objects.filter(student=student).exists():
+                    matched.append(student)
                     result = Choice.objects.filter(student=student) 
                     edited_result = []
                     if len(result) < instance.max_pref_len:
@@ -724,11 +745,10 @@ def instance(request, instance_id):
                 # Otherwise add student to unranked list
                 else:
                     all_ranks = False
-                    results.append([])
                     unranked.append(student)
             context_dict["all_ranks"] = all_ranks
             context_dict["range"] = [*range(1,instance.max_pref_len+1,1)]
-            context_dict["results"] = zip(students,results)
+            context_dict["results"] = zip(matched,results)
             context_dict["unranked"] = unranked
             return render(request, 'alloa_matching/admin_student_preference.html',context=context_dict)
 
@@ -784,33 +804,46 @@ def instance(request, instance_id):
             # Get all students assigned to the instance
             students = Student.objects.filter(instance=instance_id)
             results = []
+            matched = []
             unranked = []
-            
             # For each student
             for student in students:
                 # If student has given ranks, get all their ranked projects
                 if Choice.objects.filter(student=student).exists():
-                    result = Choice.objects.filter(student=student)
-                    results.append(result)
+                    matched.append(student)
+                    result = Choice.objects.filter(student=student) 
+                    edited_result = []
+                    if len(result) < instance.max_pref_len:
+                        for i in range(len(result)):
+                            edited_result.append(result[i].project.name)
+                        for i in range(instance.max_pref_len - len(result)):
+                            edited_result.append("Unranked")
+                    results.append(edited_result)
+
                 # Otherwise add student to unranked list
                 else:
-                    results.append([])
                     unranked.append(student)
 
-            # Load all projects and their advisor levels
-            projects = Project.objects.filter(instance=instance_id)
-            levels = []
-
+            # Get all projects currently added and output them so admin can judge how many have been proposed
+            projects = Project.objects.filter(instance=instance)
+            advisor_levels = []
+            no_levels = []
+            # For each project get their advisor levels
             for project in projects:
-                if AdvisorLevel.objects.filter(project=project).exists():
-                    result = AdvisorLevel.objects.filter(project=project)
-                    levels.append(result)
-                else:
-                    levels.append([])
+                levels = AdvisorLevel.objects.filter(project=project)
+                # Add all levels to the level list
+                advisor_levels.append(levels)
+                # If a project doesn't have any advisor levels set, store in unranked list and set boolean to false so admin cannot move stage
+                if len(levels) == 0:
+                    no_levels.append(project)
+
             # Load admin closed page
+            context_dict["projects"] = projects
+            context_dict["advisor_levels"] = advisor_levels
+            context_dict["no_levels"] = no_levels
             context_dict["projects"] = levels
-            context_dict["range"] = [*range(1,instance.max_pref_len,1)]
-            context_dict["results"] = zip(students,results)
+            context_dict["range"] = [*range(1,instance.max_pref_len+1,1)]
+            context_dict["results"] = zip(matched,results)
             context_dict["unranked"] = unranked
             return render(request, 'alloa_matching/admin_closed.html',context=context_dict)
 

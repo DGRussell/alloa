@@ -1,7 +1,18 @@
 {% extends 'alloa_matching/base.html' %}
 {% load staticfiles %}
 
+{% block head_block %}
+    <link rel="stylesheet" type="text/css" href='{% static "/css/messages.css" %}'>
+    <link rel="icon" href="{% static 'images/matching.png' %}">
+    <title>Alloa - {{instance.name}}</title>
+{% endblock %}
+
 {% block body_block %}
+    {% if messages %}
+            {% for message in messages %}
+                    <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+            {% endfor %}
+    {% endif %}
     <div style = "margin-top:20px;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Results Available</h3></div>
     {% if unmatched %}
         <p>An acceptable match could not be found in your project rankings. Please contact your course convenor</p>

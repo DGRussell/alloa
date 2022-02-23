@@ -5,15 +5,16 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <script src="https://kit.fontawesome.com/2e8b22a65b.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href='{% static "/css/messages.css" %}'>
+    <link rel="icon" href="{% static 'images/matching.png' %}">
+    <title>Alloa - {{instance.name}}</title>
 {% endblock %}
 
 {% block body_block %}
         {% if messages %}
-                <ul class="messages">
                 {% for message in messages %}
-                        <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
                 {% endfor %}
-                </ul>
         {% endif %}
         <div style = "margin-top:20px;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Student Rankings</h3></div>
         <div id = "list" style = "width:49.5%; float:left;">
@@ -42,8 +43,7 @@
                 {% endfor %}
         </div>
         <div id = "form" style = "width:48%;float:right;left:50.5%; position:absolute;">
-                <h3>Your Rankings</h3>
-                <h4>Minimum List Length: {{instance.min_pref_len}} - Maximum List Length: {{instance.max_pref_len}}</h4>
+                <h3>Your Rankings - Minimum List Length: {{instance.min_pref_len}} - Maximum List Length: {{instance.max_pref_len}}</h3>
                 <form action="{% url 'instance' instance.id %}" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         {{ formset.management_form }}
@@ -51,20 +51,20 @@
                         <div>
                                 <label for="id_name_{{forloop.counter}}">Project Rank {{forloop.counter}}:</label>
                                 <input type="text" name="project_name_{{forloop.counter0}}" maxlength="200" required="" id="id_name_{{forloop.counter}}" value="{{form.project.value}}" readonly>
-                                <a href="javascript:removeValue({{forloop.counter}})"><i style="color:grey; margin-top:1.4%;" class="fas fa-trash-alt"></i></a>
+                                <a href="javascript:removeValue({{forloop.counter}})"><i style="color:#303030; margin-top:1.8%;" class="fas fa-trash-alt"></i></a>
                                 {% if forloop.counter == 1%}
-                                        <a href="javascript:moveDown({{forloop.counter}})"><i style="color:grey;position:relative;right:3%;top:15px;margin:0;" class="fas fa-caret-down"></i></a>
+                                        <a href="javascript:moveDown({{forloop.counter}})"><i style="color:#303030; width:2%; position:relative;right:2%;top:15px;margin:0;" class="fas fa-caret-down"></i></a>
                                 {% elif forloop.counter < instance.max_pref_len %}
-                                        <a href="javascript:moveDown({{forloop.counter}})"><i style="color:grey;position:relative;right:3%;top:20px;margin:0;" class="fas fa-caret-down"></i></a>
+                                        <a href="javascript:moveDown({{forloop.counter}})"><i style="color:#303030; width:2%; position:relative;right:2%;top:20px;margin:0;" class="fas fa-caret-down"></i></a>
                                 {% endif %}
                                 {% if forloop.counter == instance.max_pref_len %}
-                                        <a href="javascript:moveUp({{forloop.counter}})"><i style="color:grey; position:relative;right:3%;top:15px;margin:0;" class="fas fa-caret-up"></i></a>
+                                        <a href="javascript:moveUp({{forloop.counter}})"><i style="color:#303030; width:2%; position:relative;right:2%;top:15px;margin:0;" class="fas fa-caret-up"></i></a>
                                 {% elif forloop.counter > 1 %}
-                                        <a href="javascript:moveUp({{forloop.counter}})"><i style="color:grey; position:relative;right:1.4%;top:5px;margin:0;" class="fas fa-caret-up"></i></a>
+                                        <a href="javascript:moveUp({{forloop.counter}})"><i style="color:#303030; width:2%; position:relative;right:0;top:5px;margin:0;" class="fas fa-caret-up"></i></a>
                                 {% endif %}
                         {% endfor %}
                         </div>
-                        <input type="submit" name = "preferences" value="Submit">
+                        <input type="submit" name = "preferences" value="Save">
                 </form>
         </div>
 {% endblock %}
@@ -91,13 +91,12 @@
         width:100%;
         border-collapse:collapse;
         border-radius:5px;
-        border: 1px solid grey;
+        border-bottom: 1px solid grey;
         margin: 0 0 10px 0;
     }
     .result th{
         text-align:left;
-        background-color:grey;
-        color:white;
+        color:#303030;
         font-size:24px;
     }
     .result th,td{
@@ -105,17 +104,11 @@
         font-family:arial;
         font-size: 16px;
     }
-    .extra{
-        display:block; 
-    }
     i{
         font-size:24px;
         margin-right:10px;
         float:right;
-        color:white;
-    }
-    #bin{
-            width:3%;
+        color:#303030;
     }
     .fix-form{
         position:fixed;
@@ -135,7 +128,7 @@
     }
     input[type=text],.rank {
         width: 90%;
-        padding: 12px 20px;
+        padding: 10px 20px;
         margin: 8px 0;
         display: inline-block;
         border: 1px solid #ccc;
@@ -148,6 +141,7 @@
 <script type="text/javascript">
         var next = {{initial_length}}+1;
         var max = {{instance.max_pref_len}};
+        var projects = [];
     $(document).ready(function() { 
         // DataTable
         $('#levels').DataTable({
@@ -162,7 +156,7 @@
             }
     }
     function moveDown(num){
-        if (num < max){
+        if (num < next-1){
                 var temp = document.getElementById("id_name_"+num).value;
                 document.getElementById("id_name_"+num).value = document.getElementById("id_name_"+(num+1)).value;
                 document.getElementById("id_name_"+(num+1)).value = temp;
@@ -170,21 +164,23 @@
 }
     function removeValue(num){
         next = next - 1;
+        projects.splice(num-1,1);
         for(var i = num; i<next; i++){
                 document.getElementById("id_name_"+i).value = document.getElementById("id_name_"+(i+1)).value;  
         }
-        console.log(next);
         document.getElementById("id_name_"+next).value = null;
         
     }
     function setValue(name){
-            
         if (next > max){
-                alert("You have tried to add too many projects, please remove one before adding another.");
+            alert("You have tried to add too many projects, please remove one before adding another.");
+        }
+        else if(projects.includes(name)){
+            alert("You cannot have duplicate projects.");
         }
         else{
-                console.log(name)
                 document.getElementById("id_name_"+next).value = name;
+                projects.push(name);
                 next = next + 1;
         }
     }

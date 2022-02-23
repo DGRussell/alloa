@@ -5,75 +5,83 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" type="text/css" href='{% static "/css/messages.css" %}'>
+    <link rel="icon" href="{% static 'images/matching.png' %}">
+    <title>Alloa - {{instance.name}}</title>
 {% endblock %}
 
 {% block body_block %}
+        {% if messages %}
+                {% for message in messages %}
+                        <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+                {% endfor %}
+        {% endif %}
 
-<div style = "margin-top:20px;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Project Proposal</h3></div>
-{% if projects|length != 0 %} 
-<h2>Next Stages</h2>
-    <a href = "{% url 'set_stage' instance.id 'L' %}" onclick="return confirm('Are you sure you want to move to the advisor level ranking stage, you cannot go back after this?')"><label class = "advisor">Advisor Level Rankings</label></a>
-    {% if all_levels %}  
-        <a href = "{% url 'set_stage' instance.id 'S' %}" onclick="return confirm('Are you sure you want to move to the student ranking stage, you cannot go back after this?')"><label class = "student">Student Rankings</label></a>
+    <div style = "margin-top:20px;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Project Proposal</h3></div>
+    {% if projects|length != 0 %} 
+    <h2>Next Stages</h2>
+        <a href = "{% url 'set_stage' instance.id 'L' %}" onclick="return confirm('Are you sure you want to move to the advisor level ranking stage, you cannot go back after this?')"><label class = "advisor">Advisor Level Rankings</label></a>
+        {% if all_levels %}  
+            <a href = "{% url 'set_stage' instance.id 'S' %}" onclick="return confirm('Are you sure you want to move to the student ranking stage, you cannot go back after this?')"><label class = "student">Student Rankings</label></a>
+        {% endif %}
+        {% if all_ranks and all_levels %}
+                <a href = "{% url 'set_stage' instance.id 'C' %}" onclick="return confirm('Are you sure you want to move to the closed stage, you cannot go back after this?')"><label class = "closed">Closed</label></a>
+        {% endif %}
     {% endif %}
-    {% if all_ranks and all_levels %}
-            <a href = "{% url 'set_stage' instance.id 'C' %}" onclick="return confirm('Are you sure you want to move to the closed stage, you cannot go back after this?')"><label class = "closed">Closed</label></a>
-    {% endif %}
-{% endif %}
 
 
-<h2>Projects - {{projects|length}}</h2>
-<table id="projects" class = "display">
-    <thead>
-        <tr>
-            <th style="width:20%;">Project Name</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for p in projects %}
-        <tr>
-                <td>{{ p.name }}</td>
-                <td>{{ p.description }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <h2>Projects - {{projects|length}}</h2>
+    <table id="projects" class = "display">
+        <thead>
+            <tr>
+                <th style="width:20%;">Project Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in projects %}
+            <tr>
+                    <td>{{ p.name }}</td>
+                    <td>{{ p.description }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-<h2>Advisor Levels - {{count}}</h2>
-<table id="levels" class = "display">
-    <thead>
-        <tr>
-            <th>Project Name</th>
-            <th>Advisor</th>
-            <th>Level</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for p in advisor_levels %}
-            {% for l in p %}
-                <tr>
-                    <td>{{ l.project.name }}</td>
-                    <td>{{ l.academic.user_profile.unique_id }}</td>
-                    {% if l.level == 1 %}
-                        <td>Expert Knowledge</td>
-                    {% elif l.level == 2 %}
-                        <td>High Knowledge</td>
-                    {% else %}
-                        <td>Good Knowledge</td>
-                    {% endif %}
+    <h2>Advisor Levels - {{count}}</h2>
+    <table id="levels" class = "display">
+        <thead>
+            <tr>
+                <th>Project Name</th>
+                <th>Advisor</th>
+                <th>Level</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in advisor_levels %}
+                {% for l in p %}
+                    <tr>
+                        <td>{{ l.project.name }}</td>
+                        <td>{{ l.academic.user_profile.unique_id }}</td>
+                        {% if l.level == 1 %}
+                            <td>Expert Knowledge</td>
+                        {% elif l.level == 2 %}
+                            <td>High Knowledge</td>
+                        {% else %}
+                            <td>Good Knowledge</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+            {% for p in no_levels %}
+                <tr style="background-color:#ff4d4d;">
+                    <td>{{p.name}}</td>
+                    <td>No Advisor</td>
+                    <td>No Level</td>
                 </tr>
             {% endfor %}
-        {% endfor %}
-        {% for p in no_levels %}
-            <tr style="background-color:#ff4d4d;">
-                <td>{{p.name}}</td>
-                <td>No Advisor</td>
-                <td>No Level</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        </tbody>
+    </table>
 {% endblock %}
 
 {% block style_block %}
@@ -109,11 +117,11 @@ table{
 }
 .advisor{
     color:white;
-    background-color: #e89015;
-    border:1px solid #e89015;
+    background-color: #e66300;
+    border:1px solid #e66300;
 }
 .advisor:hover {
-    color:#e89015;
+    color:#e66300;
     background-color: white;
 }
 .student{
@@ -127,11 +135,11 @@ table{
 }
 .closed{
     color:white;
-    background-color: #f0d805;
-    border:1px solid #f0d805;
+    background-color: #f09618;
+    border:1px solid #f09618;
 }
 .closed:hover {
-    color:#f0d805;
+    color:#f09618;
     background-color: white;
 }
 {% endblock %}

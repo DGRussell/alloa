@@ -5,9 +5,17 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" type="text/css" href='{% static "/css/messages.css" %}'>
+    <link rel="icon" href="{% static 'images/matching.png' %}">
+    <title>Alloa - {{instance.name}}</title>
 {% endblock %}
 
 {% block body_block %}
+        {% if messages %}
+                {% for message in messages %}
+                        <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+                {% endfor %}
+        {% endif %}
         <div style = "margin-top:20px;"><h1>{{ instance.name }} - </h1><h3 class = "stage">New</h3></div>
         <h2>Next Stages</h2>
         <a href = "{% url 'set_stage' instance.id 'P' %}" onclick="return confirm('Are you sure you want to move to the project proposal stage, you cannot go back after this?')"><label class = "proposal">Project Proposal</label></a>
@@ -156,11 +164,11 @@
         }
         .advisor{
                 color:white;
-                background-color: #e89015;
-                border:1px solid #e89015;
+                background-color: #e66300;
+                border:1px solid #e66300;
         }
         .advisor:hover {
-                color:#e89015;
+                color:#e66300;
                 background-color: white;
         }
         .student{
@@ -174,11 +182,11 @@
         }
         .closed{
                 color:white;
-                background-color: #f0d805;
-                border:1px solid #f0d805;
-        }
+                background-color: #f09618;
+                border:1px solid #f09618;
+            }
         .closed:hover {
-                color:#f0d805;
+                color:#f09618;
                 background-color: white;
         }
         

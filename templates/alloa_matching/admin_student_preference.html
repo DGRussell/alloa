@@ -5,9 +5,17 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" type="text/css" href='{% static "/css/messages.css" %}'>
+    <link rel="icon" href="{% static 'images/matching.png' %}">
+    <title>Alloa - {{instance.name}}</title>
 {% endblock %}
 
 {% block body_block %}
+        {% if messages %}
+                {% for message in messages %}
+                        <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+                {% endfor %}
+        {% endif %}
      <div style = "margin-top:20px;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Student Rankings</h3></div>
      {% if all_ranks %}
           <h2>Next Stages</h2>
@@ -32,10 +40,11 @@
                 {% endfor %}
 
             {% endfor %}
-            {% for result in unmatched %}
-                <tr style="background-color:#ff4d4d;" class = "unmatched">
+            {% for student in unranked %}
+                <tr>
+                    <td>{{student.user_profile.user.email}}</td>
                     {% for r in range %}
-                         <td>Unmatched</td>
+                         <td style="background-color:#ff4d4d;" class = "unmatched">Unmatched</td>
                     {% endfor %}
                 </tr>
             {% endfor %}
@@ -60,15 +69,15 @@
           display: inline-block;
           cursor:pointer;
      }
-     .closed{
-          color:white;
-          background-color: #f0d805;
-          border:1px solid #f0d805;
-     }
-     .closed:hover {
-          color:#f0d805;
-          background-color: white;
-     }
+    .closed{
+        color:white;
+        background-color: #f09618;
+        border:1px solid #f09618;
+    }
+    .closed:hover {
+        color:#f09618;
+        background-color: white;
+    }
     table{
         font-family:arial;
     }

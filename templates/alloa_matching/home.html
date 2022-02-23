@@ -5,9 +5,17 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" type="text/css" href='{% static "/css/messages.css" %}'>
+    <link rel="icon" href="{% static 'images/matching.png' %}">
+    <title>Alloa - Home</title>
 {% endblock %}
 
 {% block body_block %}
+    {% if messages %}
+            {% for message in messages %}
+                    <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+            {% endfor %}
+    {% endif %}
     <h1>Hi, {{user.first_name}} {{user.last_name}}</h1>
     {% if user_type == "SA" or user_type == "A" %}
         <a href = "{% url 'upload' %}"><label class = "upload">Upload a New Instance</label></a>
@@ -61,14 +69,14 @@ h1,h2,h4,h5,p,label{
 table{
     font-family:arial;
 }
-.R,.S,.N,.L,.P{
+.R,.S,.N,.L,.P,.C{
     color: white;
 }
 .N{
     background-color:#4169e1;
 }
 .C{
-    background-color: #f0d805;
+    background-color: #f09618;
 }
 .R{   
     background-color: green;
@@ -80,7 +88,7 @@ table{
     background-color:#14baa1;
 }
 .L{
-    background-color:#e89015;
+    background-color:#e66300;
 }
 .dataTables_wrapper {
     font-family: arial;

@@ -5,9 +5,17 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" type="text/css" href='{% static "/css/messages.css" %}'>
+    <link rel="icon" href="{% static 'images/matching.png' %}">
+    <title>Alloa - {{instance.name}}</title>
 {% endblock %}
 
 {% block body_block %}
+        {% if messages %}
+                {% for message in messages %}
+                        <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+                {% endfor %}
+        {% endif %}
     <div style = "margin:20px 0;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Closed</h3></div>
     <a href = "{% url 'compute_matching' instance.id %}" onclick="return confirm('Are you sure you want to move to the results stage, you cannot go back after this?')"><label class = "compute">Compute Matching</label></a>
     <h2>Student Rankings</h2>
@@ -25,15 +33,16 @@
             <tr>
                 <td>{{student.user_profile.user.email}}</td>
                 {% for result in student_result %} 
-                        <td>{{result.project}}</td>
+                        <td>{{result}}</td>
                 {% endfor %}
 
             {% endfor %}
-            {% for result in unmatched %}
-                <tr style="background-color:#ff4d4d;" class = "unmatched">
-                    <td style="background-color:#ff4d4d;">{{result.user_profile.user.email}}</td>
-                    <td>Unmatched</td>
-                    <td>Unmatched</td>
+            {% for student in unranked %}
+                <tr>
+                    <td>{{student.user_profile.user.email}}</td>
+                    {% for r in range %}
+                         <td style="background-color:#ff4d4d;" class = "unmatched">Unmatched</td>
+                    {% endfor %}
                 </tr>
             {% endfor %}
         </tbody>
@@ -43,28 +52,32 @@
     <table id="projects" class = "display">
         <thead>
             <tr>
-                <th>Project</th>
-                <th>Academic</th>
+                <th>Project Name</th>
+                <th>Advisor</th>
                 <th>Level</th>
             </tr>
         </thead>
         <tbody>
-            {% for project in projects %}
-            
-                {% for level in project %}
-                <tr> 
-                    <td>{{level.project}}</td>
-                    <td>{{level.academic}}</td>
-                    <td>{{level.level}}</td>
-                </tr>
+            {% for p in advisor_levels %}
+                {% for l in p %}
+                    <tr>
+                        <td>{{ l.project.name }}</td>
+                        <td>{{ l.academic.user_profile.unique_id }}</td>
+                        {% if l.level == 1 %}
+                            <td>Expert Knowledge</td>
+                        {% elif l.level == 2 %}
+                            <td>High Knowledge</td>
+                        {% else %}
+                            <td>Good Knowledge</td>
+                        {% endif %}
+                    </tr>
                 {% endfor %}
-            
             {% endfor %}
-            {% for result in unmatched %}
-                <tr style="background-color:#ff4d4d;" class = "unmatched">
-                    <td style="background-color:#ff4d4d;">{{result.user_profile.user.email}}</td>
-                    <td>Unmatched</td>
-                    <td>Unmatched</td>
+            {% for p in no_levels %}
+                <tr style="background-color:#ff4d4d;">
+                    <td>{{p.name}}</td>
+                    <td>No Advisor</td>
+                    <td>No Level</td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -107,8 +120,8 @@
         display:inline;
     }
     .stage{
-        background-color: #f0d805;
-        color:#787878;
+        background-color: #f09618;
+        color:white;
         padding: 5px;
         border-radius:5px;
         vertical-align:4px;

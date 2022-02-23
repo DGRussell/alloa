@@ -4,14 +4,19 @@
 {% block optional_block %}
 {% endblock %}
 
+{% block head_block%}
+    <link rel="stylesheet" type="text/css" href='{% static "/css/messages.css" %}'>
+    <link rel="icon" href="{% static 'images/matching.png' %}">
+    <title>Alloa - Login</title>
+{% endblock %}
+
 {% block body_block %}
     {% if messages %}
-        <ul class="messages">
             {% for message in messages %}
-            <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
             {% endfor %}
-        </ul>
     {% endif %}
+
     <h1>Login</h1>
     <form id="login_form" method="post" action="{% url 'index' %}">
         {% csrf_token %}

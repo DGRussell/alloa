@@ -1,0 +1,16 @@
+.success,.error{
+    width:98%;
+    padding:1%;
+    border-radius:5px;
+    font-family:arial;
+    color:white;
+    font-weight:500;
+}
+.error{
+    background-color:#ff4d4d;
+    border: 1px solid red;
+}
+.success{
+    background-color:#239443;
+    border: 1px solid #17692e;
+}

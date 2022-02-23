@@ -5,16 +5,17 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <script src="https://kit.fontawesome.com/2e8b22a65b.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href='{% static "/css/messages.css" %}'>
+    <link rel="icon" href="{% static 'images/matching.png' %}">
+    <title>Alloa - {{instance.name}}</title>
 {% endblock %}
-
+    
 {% block body_block %}
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+        {% if messages %}
+                {% for message in messages %}
+                        <p {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</p>
+                {% endfor %}
+        {% endif %}
     <div style = "margin:20px 0;"><h1>{{ instance.name }} - </h1><h3 class = "stage">Project Proposal</h3></div>
     <div style = "width:49.5%; float:left;" id = "list">
         {% if results|length == 1 %}
@@ -86,13 +87,12 @@
         width:100%;
         border-collapse:collapse;
         border-radius:5px;
-        border: 1px solid grey;
+        border-bottom: 1px solid grey;
         margin: 0 0 10px 0;
     }
     .result th{
         text-align:left;
-        background-color:grey;
-        color:white;
+        color:#303030;
         font-size:24px;
     }
     .result th,td{
@@ -100,12 +100,11 @@
         font-family:arial;
         font-size: 16px;
     }
-
     i{
         font-size:24px;
         margin-right:10px;
         float:right;
-        color:white;
+        color:#303030;
     }
     .fix-form{
         position:fixed;
