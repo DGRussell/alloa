@@ -225,7 +225,7 @@ def upload(request):
 
                     # If not then create a new user and corresponding profile
                     else:
-                        user = User(username=academics[i]["Staff ID"], first_name=academics[i]["Supervisor Firstname"],last_name=academics[i]["Supervisor Surname"],email=academics[i]["Staff ID"]+"@glasgow.ac.uk")
+                        user = User(username=academics[i]["Staff ID"], first_name=academics[i]["Supervisor Firstname"],last_name=academics[i]["Supervisor Surname"],email=academics[i]["Staff ID"])
                         user.save()
                         user.set_password("TestPass1")
                         user.save()
