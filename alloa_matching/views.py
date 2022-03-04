@@ -920,6 +920,7 @@ def set_stage(request,instance_id,new_stage):
     instance = Instance.objects.get(id=instance_id)
     instance.stage = new_stage
     instance.save()
+    messages.success(request,"Stage updated successfully.")
     return redirect(reverse('instance', kwargs={"instance_id": instance.id}))
 
 @login_required
