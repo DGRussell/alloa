@@ -112,24 +112,24 @@ class SPA_IG:
         if instance_type == 1 or instance_type == 2:
             filename = 'projects'+str(k)+'.csv' # create projects.csv for kth instance
             with open(filename, 'w') as I:
-                I.write('Project,Project Lower Capacity,Project Upper Capacity,Choice 1,Choice 2,Choice 3\n')
+                I.write('Project,Description,Project Lower Capacity,Project Upper Capacity,Choice 1,Choice 2,Choice 3\n')
                 for proj_num in range(1, self.projects + 1): # for all projects
                     project = 'p'+str(proj_num) # get project ID
                     capacity = self.plc[project][0] # get upper capacity of project
                     lecturer = self.plc[project][1][1:] # get lecturer who offers that project
-                    I.write('Project'+str(proj_num) + ',0,' + str(capacity) + ',ID' + str(lecturer)+',,') # write out info for project in required format
+                    I.write('Project'+str(proj_num) + ',description,0,' + str(capacity) + ',ID' + str(lecturer)+',,') # write out info for project in required format
                     I.write('\n')
                 I.close()
         # Only projects no advisor levels
         if instance_type == 3 or instance_type == 4:
             filename = 'projects'+str(k)+'.csv' # create projects.csv for kth instance
             with open(filename, 'w') as I:
-                I.write('Project,Project Lower Capacity,Project Upper Capacity\n')
+                I.write('Project,Description,Project Lower Capacity,Project Upper Capacity\n')
                 for proj_num in range(1, self.projects + 1): # for all projects
                     project = 'p'+str(proj_num) # get project ID
                     capacity = self.plc[project][0] # get upper capacity of project
                     lecturer = self.plc[project][1][1:] # get lecturer who offers that project
-                    I.write('Project'+str(proj_num) + ',0,' + str(capacity)) # write out info for project in required format
+                    I.write('Project'+str(proj_num) + ',description,0,' + str(capacity)) # write out info for project in required format
                     I.write('\n')
                 I.close()
         # Academics

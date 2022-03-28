@@ -64,11 +64,11 @@
                 <tr>
                     <th>
                         <p class = "header">{{result.name}}</p> 
+                        <a href="javascript:setValue('{{result.name}}')">
+                            <i class="fas fa-plus-circle"></i>
+                        </a>
                         <a href="javascript:showOrHide({{forloop.counter}})">
                             <i id="arrow{{forloop.counter}}"class={% if results|length > 3 %}'fas fa-angle-right'{% else %}'fas fa-angle-down'{% endif %}></i>
-                        </a>
-                        <a href="javascript:setValue('{{result.name}}')">
-                            <i style = "margin-left:10px;" class="fas fa-plus-circle"></i>
                         </a>
                     </th>
                 </tr>
